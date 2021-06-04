@@ -1,6 +1,9 @@
 .vscode/
 .idea/
 .gradle/
+.settings/
 *.log
 .build/
 build/
+.bin/
+bin/
