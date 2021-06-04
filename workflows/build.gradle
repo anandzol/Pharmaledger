@@ -6,9 +6,8 @@ cordapp {
     targetPlatformVersion corda_platform_version
     minimumPlatformVersion corda_platform_version
     workflow {
-        name "supplychain Flows"
-        vendor "Corda Open Source"
-        licence "Apache License, Version 2.0"
+        name "pharmaledger Flows"
+        vendor "pharmaledger"
         versionId 1
     }
 }
@@ -30,13 +29,6 @@ sourceSets {
         }
         resources {
             srcDir rootProject.file("config/test")
-        }
-    }
-    integrationTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/integrationTest/java')
         }
     }
 }
@@ -63,9 +55,4 @@ dependencies {
     cordaCompile "$accounts_release_group:accounts-workflows:$accounts_release_version"
     cordaCompile "$accounts_release_group:accounts-contracts:$accounts_release_version"
 
-}
-
-task integrationTest(type: Test, dependsOn: []) {
-    testClassesDirs = sourceSets.integrationTest.output.classesDirs
-    classpath = sourceSets.integrationTest.runtimeClasspath
 }

@@ -5,9 +5,8 @@ cordapp {
     targetPlatformVersion corda_platform_version
     minimumPlatformVersion corda_platform_version
     contract {
-        name "supplychain Contracts"
-        vendor "Corda Open Source"
-        licence "Apache License, Version 2.0"
+        name "pharmaledger Contracts"
+        vendor "pharmaledger"
         versionId 1
     }
 }
