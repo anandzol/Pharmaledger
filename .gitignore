@@ -1,3 +1,6 @@
 .vscode/
 .idea/
 .gradle/
+*.log
+.build/
+build/
