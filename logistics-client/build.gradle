@@ -25,7 +25,7 @@ dependencies {
 }
 
 springBoot {
-    mainClassName = "net.corda.samples.example.webserver.Starter"
+    mainClassName = "net.corda.pharmaledger.logistics.webserver.Starter"
 }
 
 /* The Client is the communication channel between the external and the node. This task will help you immediately
@@ -34,7 +34,7 @@ springBoot {
  */
 task runTestClient(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
-    main = 'net.corda.samples.example.webserver.Client'
+    main = 'net.corda.pharmaledger.logistics.webserver.Client'
     args 'localhost:10006', 'user1', 'test'
 }
 
@@ -43,12 +43,6 @@ task runTestClient(type: JavaExec, dependsOn: assemble) {
  */
 task runPartyAServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
-    main = 'net.corda.samples.example.webserver.Starter'
+    main = 'net.corda.pharmaledger.logistics.webserver.Starter'
     args '--server.port=50005', '--config.rpc.host=localhost', '--config.rpc.port=10006', '--config.rpc.username=user1', '--config.rpc.password=test'
-}
-
-task runPartyBServer(type: JavaExec, dependsOn: assemble) {
-    classpath = sourceSets.main.runtimeClasspath
-    main = 'net.corda.samples.example.webserver.Starter'
-    args '--server.port=50006', '--config.rpc.host=localhost', '--config.rpc.port=10009', '--config.rpc.username=user1', '--config.rpc.password=test'
 }
