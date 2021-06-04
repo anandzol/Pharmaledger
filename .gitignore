@@ -4,3 +4,5 @@
 *.log
 .build/
 build/
+.bin/
+bin/
