@@ -8,7 +8,7 @@ import net.corda.pharmaledger.pharma.contracts.TrialStateContract;
 @BelongsToContract(TrialStateContract.class)
 public class TrialState {
     private int trialID;
-    private String trialDetails; 
+    private JsonObject trialDetails; 
 
 
     public int getTrialID() {
@@ -19,11 +19,11 @@ public class TrialState {
         this.trialID = trialID;
     }
 
-    public String getTrialDetails() {
+    public JsonObject getTrialDetails() {
         return this.trialDetails;
     }
 
-    public void setTrialDetails(String trialDetails) {
+    public void setTrialDetails(JsonObject trialDetails) {
         Gson gson = new Gson();
         this.trialDetails = trialDetails;
     }
