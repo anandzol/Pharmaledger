@@ -1,6 +1,6 @@
 package net.corda.pharmaledger.pharma.states;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
 
 import net.corda.core.contracts.BelongsToContract;
 import net.corda.pharmaledger.pharma.contracts.TrialStateContract;
@@ -8,7 +8,8 @@ import net.corda.pharmaledger.pharma.contracts.TrialStateContract;
 @BelongsToContract(TrialStateContract.class)
 public class TrialState {
     private int trialID;
-    private JsonObject trialDetails; 
+    private JsonArray patient; 
+    private String status;
 
 
     public int getTrialID() {
@@ -19,12 +20,21 @@ public class TrialState {
         this.trialID = trialID;
     }
 
-    public JsonObject getTrialDetails() {
-        return this.trialDetails;
+    public JsonArray getPatient() {
+        return this.patient;
     }
 
-    public void setTrialDetails(JsonObject trialDetails) {
-        Gson gson = new Gson();
-        this.trialDetails = trialDetails;
+    public void setPatient(JsonArray patient) {
+        this.patient = patient;
     }
+
+    public String getStatus() {
+        return this.status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
 }
