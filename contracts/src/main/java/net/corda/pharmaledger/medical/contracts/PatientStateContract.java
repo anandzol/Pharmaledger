@@ -26,6 +26,7 @@ public class PatientStateContract implements Contract {
 			require.using("Age should not be greater than 150", patient.getPatientBiometricData().get(Constants.BIOMETRIC_AGE).getAsInt() > 150);
 			require.using("Height should not be greater than 300cm", patient.getPatientBiometricData().get(Constants.BIOMETRIC_HEIGHT).getAsInt() > 300);
 			require.using("Gender should not be empty", !StringUtils.isEmpty(patient.getPatientBiometricData().get(Constants.BIOMETRIC_GENDER).getAsString()));
+			require.using("Blood Type should not be empty", !StringUtils.isEmpty(patient.getPatientBiometricData().get(Constants.BIOMETRIC_BLOODTYPE).getAsString()));
 			return null;
 		});
 	}

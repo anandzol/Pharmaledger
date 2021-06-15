@@ -5,4 +5,5 @@ public class Constants {
     public static final String BIOMETRIC_AGE = "age";
     public static final String BIOMETRIC_HEIGHT = "height";
     public static final String BIOMETRIC_GENDER = "gender";
+    public static final String BIOMETRIC_BLOODTYPE = "bloodtype";
 }
