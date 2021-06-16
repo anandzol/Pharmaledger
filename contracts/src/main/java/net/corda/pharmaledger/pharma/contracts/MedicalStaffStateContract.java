@@ -13,6 +13,8 @@ import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 public class MedicalStaffStateContract implements Contract {
 
+	public static final String ID = "net.corda.pharmaledger.pharma.contracts.MedicalStaffStateContract";
+
 	@Override
 	public void verify(LedgerTransaction tx) throws IllegalArgumentException {
 		List<ContractState> outputs = tx.getOutputStates();
