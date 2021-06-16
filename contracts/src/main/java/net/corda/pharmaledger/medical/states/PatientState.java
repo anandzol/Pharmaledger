@@ -1,19 +1,39 @@
 package net.corda.pharmaledger.medical.states;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import net.corda.core.contracts.BelongsToContract;
+import net.corda.core.contracts.ContractState;
+import net.corda.core.identity.AbstractParty;
+import net.corda.core.identity.AnonymousParty;
 import net.corda.pharmaledger.medical.contracts.PatientStateContract;
 
 @BelongsToContract(PatientStateContract.class)
-public class PatientState {
+public class PatientState implements ContractState {
     private int patientID;
     private String mediStaff;
-    private String patientAddress;
     private JsonArray patientEvaluation;
     private JsonObject patientBiometricData;
+    private List<AbstractParty> participants;
 
+    public PatientState(int patientID, String mediStaff,  String gender, int weight, int height, int age, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
+        this.patientID = patientID;
+        this.mediStaff = mediStaff;
+        this.patientBiometricData=null;
+        this.patientBiometricData.addProperty("gender", gender);
+        this.patientBiometricData.addProperty("weight", weight);
+        this.patientBiometricData.addProperty("height", height);
+        this.patientBiometricData.addProperty("age", age);
+        this.participants = new ArrayList<AbstractParty>();
+        participants.add(medicalAccount);
+        participants.add(pharmaAccount);
+    }
+
+    
 
     public int getPatientID() {
         return this.patientID;
@@ -31,14 +51,6 @@ public class PatientState {
         this.mediStaff = mediStaff;
     }
 
-    public String getPatientAddress() {
-        return this.patientAddress;
-    }
-
-    public void setPatientAddress(String patientAddress) {
-        this.patientAddress = patientAddress;
-    }
-
     public JsonArray getPatientEvaluation() {
         return this.patientEvaluation;
     }
@@ -53,6 +65,13 @@ public class PatientState {
 
     public void setPatientBiometricData(JsonObject patientBiometricData) {
         this.patientBiometricData = patientBiometricData;
+    }
+
+
+
+    @Override
+    public List<AbstractParty> getParticipants() {
+        return this.participants;
     }
 
 }

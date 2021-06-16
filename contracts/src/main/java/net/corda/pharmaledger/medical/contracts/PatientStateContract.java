@@ -13,7 +13,7 @@ import net.corda.pharmaledger.medical.states.PatientState;
 import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 public class PatientStateContract implements Contract {
-
+	public static final String ID = "net.corda.pharmaledger.medical.contracts.PatientStateContract";
 	@Override
 	public void verify(LedgerTransaction tx) throws IllegalArgumentException {
 		List<ContractState> outputs = tx.getOutputStates();
@@ -21,7 +21,6 @@ public class PatientStateContract implements Contract {
 			PatientState patient = (PatientState) outputs.get(0);
 			require.using("ID should be greater than 0", patient.getPatientID() > 0);
 			require.using("Name should not be empty", !StringUtils.isEmpty(patient.getMediStaff()));
-			require.using("Address should not be empty", !StringUtils.isEmpty(patient.getPatientAddress()));
 			require.using("Weight should not be greater than 200KGs", patient.getPatientBiometricData().get(Constants.BIOMETRIC_WEIGHT).getAsInt() > 200);
 			require.using("Age should not be greater than 150", patient.getPatientBiometricData().get(Constants.BIOMETRIC_AGE).getAsInt() > 150);
 			require.using("Height should not be greater than 300cm", patient.getPatientBiometricData().get(Constants.BIOMETRIC_HEIGHT).getAsInt() > 300);
