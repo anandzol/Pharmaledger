@@ -45,9 +45,13 @@ public class SendPatientData extends FlowLogic<String>{
         this.toPharma = toPharma;
     }
     @Override
+    @Suspendable
     public String call() throws FlowException {
         
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
+        System.out.println("*******");
+        System.out.println(accountService.allAccounts().size());
+        System.out.println(accountService.allAccounts());
         AccountInfo myAccount = accountService.accountInfo(fromMedical).get(0).getState().getData();
         PublicKey myKey = subFlow(new NewKeyForAccount(myAccount.getIdentifier().getId())).getOwningKey();
 
@@ -73,6 +77,7 @@ public class SendPatientData extends FlowLogic<String>{
 
         return "Successfully sent for patient ID:" + patientID;
     }
+}
     
 @InitiatedBy(SendPatientData.class)
 class SendInvoiceResponder extends FlowLogic<Void> {

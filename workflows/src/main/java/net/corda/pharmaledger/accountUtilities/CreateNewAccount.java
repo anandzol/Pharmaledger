@@ -1,16 +1,14 @@
-package net.corda.samples.supplychain.accountUtilities;
+package net.corda.pharmaledger.accountUtilities;
 
 import com.r3.corda.lib.accounts.contracts.states.AccountInfo;
-import com.r3.corda.lib.accounts.workflows.*;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
-import net.corda.core.contracts.StateAndRef;
-import net.corda.core.flows.*;
-import co.paralleluniverse.fibers.Suspendable;
-import com.r3.corda.lib.accounts.workflows.services.AccountService;
-import net.corda.core.flows.FlowLogic;;
-import net.corda.core.flows.StartableByRPC;
 
-import java.util.UUID;
+import net.corda.core.contracts.StateAndRef;
+import net.corda.core.flows.FlowException;
+import net.corda.core.flows.FlowLogic;
+import net.corda.core.flows.InitiatingFlow;
+import net.corda.core.flows.StartableByRPC;
+import net.corda.core.flows.StartableByService;
 
 @StartableByRPC
 @StartableByService

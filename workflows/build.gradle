@@ -54,5 +54,7 @@ dependencies {
     cordaCompile "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
     cordaCompile "$accounts_release_group:accounts-workflows:$accounts_release_version"
     cordaCompile "$accounts_release_group:accounts-contracts:$accounts_release_version"
+    compile "com.google.code.gson:gson:2.8.7"
+    implementation "com.google.code.gson:gson:2.8.7"
 
 }
