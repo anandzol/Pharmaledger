@@ -23,7 +23,7 @@ public class PatientState implements ContractState {
     public PatientState(int patientID, String mediStaff,  String gender, int weight, int height, int age, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
         this.patientID = patientID;
         this.mediStaff = mediStaff;
-        this.patientBiometricData=null;
+        this.patientBiometricData = new JsonObject();
         this.patientBiometricData.addProperty("gender", gender);
         this.patientBiometricData.addProperty("weight", weight);
         this.patientBiometricData.addProperty("height", height);
