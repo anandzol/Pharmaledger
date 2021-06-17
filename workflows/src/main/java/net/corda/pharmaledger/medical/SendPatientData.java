@@ -38,13 +38,23 @@ public class SendPatientData extends FlowLogic<String>{
     private String medicalStaff;
     private String fromMedical;
     private String toPharma;
+    private int Age;
+    private String Gender;
+    private int Weight; 
+    private int Height;
 
-    public SendPatientData(int patientID, String medicalStaff, String fromMedical, String toPharma) {
+    public SendPatientData(int patientID, String medicalStaff, String fromMedical, String toPharma, int Age, String Gender, int Weight, int Height) {
         this.patientID = patientID;
         this.medicalStaff = medicalStaff;
         this.fromMedical = fromMedical;
         this.toPharma = toPharma;
+        this.Age = Age;
+        this.Gender = Gender;
+        this.Weight = Weight;
+        this.Height = Height;
     }
+
+    
     @Override
     @Suspendable
     public String call() throws FlowException {
@@ -59,7 +69,7 @@ public class SendPatientData extends FlowLogic<String>{
         AccountInfo targetAccount = accountService.accountInfo(toPharma).get(0).getState().getData();
         AnonymousParty targetAcctAnonymousParty = subFlow(new RequestKeyForAccount(targetAccount));
 
-        PatientState patientData = new PatientState(patientID, medicalStaff, "asd", "gfh", new AnonymousParty(myKey), targetAcctAnonymousParty);
+        PatientState patientData = new PatientState(patientID, medicalStaff, Age, Gender, Height, Weight, new AnonymousParty(myKey), targetAcctAnonymousParty);
 
         final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
