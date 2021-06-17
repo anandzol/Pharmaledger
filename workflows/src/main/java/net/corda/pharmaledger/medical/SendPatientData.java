@@ -27,6 +27,7 @@ import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.pharmaledger.accountUtilities.NewKeyForAccount;
+import net.corda.pharmaledger.medical.contracts.PatientStateContract;
 import net.corda.pharmaledger.medical.states.PatientState;
 
 @InitiatingFlow
@@ -63,7 +64,8 @@ public class SendPatientData extends FlowLogic<String>{
         final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
         TransactionBuilder txbuilder = new TransactionBuilder(notary)
-                .addOutputState(patientData);
+                .addOutputState(patientData)
+                .addCommand(new PatientStateContract.Commands.Create(), Arrays.asList(targetAcctAnonymousParty.getOwningKey(),myKey));;
 
         SignedTransaction locallySignedTx = getServiceHub().signInitialTransaction(txbuilder,Arrays.asList(getOurIdentity().getOwningKey(),myKey));
         FlowSession sessionForAccountToSendTo = initiateFlow(targetAccount.getHost());

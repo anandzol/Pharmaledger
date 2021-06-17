@@ -1,16 +1,17 @@
 package net.corda.pharmaledger.medical.contracts;
 
+import static net.corda.core.contracts.ContractsDSL.requireThat;
+
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.transactions.LedgerTransaction;
 import net.corda.pharmaledger.Constants;
 import net.corda.pharmaledger.medical.states.PatientState;
-
-import static net.corda.core.contracts.ContractsDSL.requireThat;
 
 public class PatientStateContract implements Contract {
 	public static final String ID = "net.corda.pharmaledger.medical.contracts.PatientStateContract";
@@ -29,5 +30,8 @@ public class PatientStateContract implements Contract {
 			return null;
 		});
 	}
-    
+
+	public interface Commands extends CommandData {
+        class Create implements Commands {}
+    }
 }
