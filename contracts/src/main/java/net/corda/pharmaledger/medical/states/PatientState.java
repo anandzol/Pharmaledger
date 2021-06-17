@@ -3,7 +3,6 @@ package net.corda.pharmaledger.medical.states;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import net.corda.core.contracts.BelongsToContract;
@@ -16,18 +15,19 @@ import net.corda.pharmaledger.medical.contracts.PatientStateContract;
 public class PatientState implements ContractState {
     private int patientID;
     private String mediStaff;
-    private JsonArray patientEvaluation;
-    private JsonObject patientBiometricData;
+    private String patientEvaluation;
+    private String patientBiometricData;
     private List<AbstractParty> participants;
 
     public PatientState(int patientID, String mediStaff,  String gender, int weight, int height, int age, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
         this.patientID = patientID;
         this.mediStaff = mediStaff;
-        this.patientBiometricData = new JsonObject();
-        this.patientBiometricData.addProperty("gender", gender);
-        this.patientBiometricData.addProperty("weight", weight);
-        this.patientBiometricData.addProperty("height", height);
-        this.patientBiometricData.addProperty("age", age);
+        JsonObject patientBiometricDataJson = new JsonObject();
+        patientBiometricDataJson.addProperty("gender", gender);
+        patientBiometricDataJson.addProperty("weight", weight);
+        patientBiometricDataJson.addProperty("height", height);
+        patientBiometricDataJson.addProperty("age", age);
+        this.patientBiometricData=patientBiometricDataJson.toString();
         this.participants = new ArrayList<AbstractParty>();
         participants.add(medicalAccount);
         participants.add(pharmaAccount);
@@ -51,19 +51,19 @@ public class PatientState implements ContractState {
         this.mediStaff = mediStaff;
     }
 
-    public JsonArray getPatientEvaluation() {
+    public String getPatientEvaluation() {
         return this.patientEvaluation;
     }
 
-    public void setPatientEvaluation(JsonArray patientEvaluation) {
+    public void setPatientEvaluation(String patientEvaluation) {
         this.patientEvaluation = patientEvaluation;
     }
 
-    public JsonObject getPatientBiometricData() {
+    public String getPatientBiometricData() {
         return this.patientBiometricData;
     }
 
-    public void setPatientBiometricData(JsonObject patientBiometricData) {
+    public void setPatientBiometricData(String patientBiometricData) {
         this.patientBiometricData = patientBiometricData;
     }
 
