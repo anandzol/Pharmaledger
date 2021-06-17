@@ -3,8 +3,6 @@ package net.corda.pharmaledger.medical.states;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.gson.JsonObject;
-
 import net.corda.core.contracts.BelongsToContract;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.identity.AbstractParty;
@@ -17,23 +15,21 @@ public class PatientState implements ContractState {
     private String mediStaff;
     private String patientEvaluation;
     private String patientBiometricData;
+    private AnonymousParty medicalAccount;
+    private AnonymousParty pharmaAccount;
     private List<AbstractParty> participants;
 
-    public PatientState(int patientID, String mediStaff,  String gender, int weight, int height, int age, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
+    public PatientState(int patientID, String mediStaff,  String patientBiometricData, String patientEvaluation, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
         this.patientID = patientID;
         this.mediStaff = mediStaff;
-        JsonObject patientBiometricDataJson = new JsonObject();
-        patientBiometricDataJson.addProperty("gender", gender);
-        patientBiometricDataJson.addProperty("weight", weight);
-        patientBiometricDataJson.addProperty("height", height);
-        patientBiometricDataJson.addProperty("age", age);
-        this.patientBiometricData=patientBiometricDataJson.toString();
+        this.patientBiometricData = patientBiometricData;
+        this.patientEvaluation = patientEvaluation;
+        this.medicalAccount = medicalAccount;
+        this.pharmaAccount = pharmaAccount;
         this.participants = new ArrayList<AbstractParty>();
         participants.add(medicalAccount);
         participants.add(pharmaAccount);
     }
-
-    
 
     public int getPatientID() {
         return this.patientID;
@@ -68,6 +64,21 @@ public class PatientState implements ContractState {
     }
 
 
+    public AnonymousParty getMedicalAccount() {
+        return this.medicalAccount;
+    }
+
+    public void setMedicalAccount(AnonymousParty medicalAccount) {
+        this.medicalAccount = medicalAccount;
+    }
+
+    public AnonymousParty getPharmaAccount() {
+        return this.pharmaAccount;
+    }
+
+    public void setPharmaAccount(AnonymousParty pharmaAccount) {
+        this.pharmaAccount = pharmaAccount;
+    }
 
     @Override
     public List<AbstractParty> getParticipants() {

@@ -59,7 +59,7 @@ public class SendPatientData extends FlowLogic<String>{
         AccountInfo targetAccount = accountService.accountInfo(toPharma).get(0).getState().getData();
         AnonymousParty targetAcctAnonymousParty = subFlow(new RequestKeyForAccount(targetAccount));
 
-        PatientState patientData = new PatientState(patientID, medicalStaff, "asd", 100, 180, 23, new AnonymousParty(myKey), targetAcctAnonymousParty);
+        PatientState patientData = new PatientState(patientID, medicalStaff, "asd", "gfh", new AnonymousParty(myKey), targetAcctAnonymousParty);
 
         final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
