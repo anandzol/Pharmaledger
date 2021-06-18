@@ -38,6 +38,15 @@ public class SendPatientAddressData extends FlowLogic<String> {
     private String fromMedical;
     private String toLogistics;
 
+
+    public SendPatientAddressData(String shipmentMappingID, String patientAddress, String fromMedical, String toLogistics) {
+        this.shipmentMappingID = shipmentMappingID;
+        this.patientAddress = patientAddress;
+        this.fromMedical = fromMedical;
+        this.toLogistics = toLogistics;
+    }
+
+
     @Override
     @Suspendable
     public String call() throws FlowException {
