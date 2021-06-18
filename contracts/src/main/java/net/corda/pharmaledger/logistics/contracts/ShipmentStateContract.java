@@ -5,6 +5,7 @@ import static net.corda.core.contracts.ContractsDSL.requireThat;
 import java.util.Arrays;
 import java.util.List;
 
+import net.corda.core.contracts.CommandData;
 import net.corda.core.contracts.Contract;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.transactions.LedgerTransaction;
@@ -24,5 +25,8 @@ public class ShipmentStateContract implements Contract {
 		});
         
     }
-
+	
+	public interface Commands extends CommandData {
+        class Create implements Commands {}
+    }
 }    
