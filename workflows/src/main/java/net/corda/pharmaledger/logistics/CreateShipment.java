@@ -18,7 +18,10 @@ import net.corda.core.flows.FinalityFlow;
 import net.corda.core.flows.FlowException;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.FlowSession;
+import net.corda.core.flows.InitiatedBy;
 import net.corda.core.flows.InitiatingFlow;
+import net.corda.core.flows.ReceiveFinalityFlow;
+import net.corda.core.flows.SignTransactionFlow;
 import net.corda.core.flows.StartableByRPC;
 import net.corda.core.identity.AnonymousParty;
 import net.corda.core.identity.Party;
@@ -84,38 +87,29 @@ public class CreateShipment extends FlowLogic<String>{
         
         return "Shipment Created with Mapping ID: " + shipmentMappingID;
     }
+ 
+}
 
+@InitiatedBy(CreateShipment.class)
+class CreateShipmentResponder extends FlowLogic<Void> {
+    //private variable
+    private FlowSession counterpartySession;
 
-    public String getShipmentMappingID() {
-        return this.shipmentMappingID;
+    //Constructor
+    public CreateShipmentResponder(FlowSession counterpartySession) {
+        this.counterpartySession = counterpartySession;
     }
 
-    public void setShipmentMappingID(String shipmentMappingID) {
-        this.shipmentMappingID = shipmentMappingID;
+    @Override
+    @Suspendable
+    public Void call() throws FlowException {
+        subFlow(new SignTransactionFlow(counterpartySession) {
+            @Override
+            protected void checkTransaction(SignedTransaction stx) throws FlowException {
+                // Custom Logic to validate transaction.
+            }
+        });
+        subFlow(new ReceiveFinalityFlow(counterpartySession));
+        return null;
     }
-
-    public String getStatus() {
-        return this.status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getFromLogistics() {
-        return this.fromLogistics;
-    }
-
-    public void setFromLogistics(String fromLogistics) {
-        this.fromLogistics = fromLogistics;
-    }
-
-    public String getToPharma() {
-        return this.toPharma;
-    }
-
-    public void setToPharma(String toPharma) {
-        this.toPharma = toPharma;
-    }
-    
 }
