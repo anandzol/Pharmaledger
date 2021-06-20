@@ -11,7 +11,6 @@ import com.r3.corda.lib.accounts.workflows.services.AccountService;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
 
 import co.paralleluniverse.fibers.Suspendable;
-import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.flows.CollectSignatureFlow;
 import net.corda.core.flows.FinalityFlow;
@@ -30,19 +29,18 @@ import net.corda.core.transactions.TransactionBuilder;
 import net.corda.pharmaledger.accountUtilities.NewKeyForAccount;
 import net.corda.pharmaledger.logistics.contracts.ShipmentStateContract;
 import net.corda.pharmaledger.logistics.states.ShipmentState;
-import net.corda.pharmaledger.medical.states.PatientAddressState;
 
 @InitiatingFlow
 @StartableByRPC
-public class CreateShipment extends FlowLogic<String>{
+public class ShipmentTracker extends FlowLogic<String>{
 
-    private String shipmentMappingID;
+    private String packageID;
     private String status;
     private String fromLogistics;
     private String toPharma;
 
-    public CreateShipment(String shipmentMappingID, String status, String fromLogistics, String toPharma) {
-        this.shipmentMappingID = shipmentMappingID;
+    public ShipmentTracker(String packageID, String status, String fromLogistics, String toPharma) {
+        this.packageID = packageID;
         this.status = status;
         this.fromLogistics = fromLogistics;
         this.toPharma = toPharma;
@@ -51,14 +49,6 @@ public class CreateShipment extends FlowLogic<String>{
     @Override
     @Suspendable
     public String call() throws FlowException {
-        List<StateAndRef<PatientAddressState>> patientAddressStateAndRefs = getServiceHub().getVaultService()
-        .queryBy(PatientAddressState.class).getStates();
-
-        StateAndRef<PatientAddressState> inputStateAndRef = patientAddressStateAndRefs.stream().filter(patientAddressStateAndRef -> {
-            PatientAddressState patientAddressState = patientAddressStateAndRef.getState().getData();
-            return patientAddressState.getShipmentMappingID().equals(shipmentMappingID);
-        }).findAny().orElseThrow(() -> new IllegalArgumentException("Patient Address Not Found"));
-
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
         AccountInfo myAccount = accountService.accountInfo(fromLogistics).get(0).getState().getData();
         PublicKey myKey = subFlow(new NewKeyForAccount(myAccount.getIdentifier().getId())).getOwningKey();
@@ -66,7 +56,7 @@ public class CreateShipment extends FlowLogic<String>{
         AccountInfo targetAccount = accountService.accountInfo(toPharma).get(0).getState().getData();
         AnonymousParty targetAcctAnonymousParty = subFlow(new RequestKeyForAccount(targetAccount));
 
-        ShipmentState shipment = new ShipmentState(shipmentMappingID, status, new AnonymousParty(myKey), targetAcctAnonymousParty);
+        ShipmentState shipment = new ShipmentState(packageID, status, new AnonymousParty(myKey), targetAcctAnonymousParty);
 
         final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
@@ -85,12 +75,12 @@ public class CreateShipment extends FlowLogic<String>{
                 Arrays.asList(sessionForAccountToSendTo).stream().filter(it -> it.getCounterparty() != getOurIdentity()).collect(Collectors.toList())));
 
         
-        return "Shipment Created with Mapping ID: " + shipmentMappingID;
+        return "Shipment Created with Package ID: " + packageID;
     }
  
 }
 
-@InitiatedBy(CreateShipment.class)
+@InitiatedBy(ShipmentTracker.class)
 class CreateShipmentResponder extends FlowLogic<Void> {
     //private variable
     private FlowSession counterpartySession;
