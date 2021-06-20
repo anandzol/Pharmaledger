@@ -3,10 +3,13 @@ package net.corda.pharmaledger.pharma.states;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.corda.core.contracts.BelongsToContract;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.AnonymousParty;
+import net.corda.pharmaledger.pharma.contracts.ShipmentRequestStateContract;
 
+@BelongsToContract(ShipmentRequestStateContract.class)
 public class ShipmentRequestState implements ContractState {
     private String shipmentMappingID;
     private String packageID;
