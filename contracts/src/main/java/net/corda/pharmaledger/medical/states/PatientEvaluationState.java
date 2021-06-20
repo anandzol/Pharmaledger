@@ -88,8 +88,7 @@ public class PatientEvaluationState implements ContractState {
 
     @Override
     public List<AbstractParty> getParticipants() {
-        // TODO Auto-generated method stub
-        return null;
+        return this.participants;
     }
     
 

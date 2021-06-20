@@ -13,7 +13,8 @@ import net.corda.core.transactions.LedgerTransaction;
 import net.corda.pharmaledger.medical.states.PatientEvaluationState;
 
 public class PatientEvaluationStateContract implements Contract{
-
+    public static final String ID = "net.corda.pharmaledger.medical.contracts.PatientEvaluationStateContract";
+    
     @Override
     public void verify(LedgerTransaction tx) throws IllegalArgumentException {
         List<ContractState> outputs = tx.getOutputStates();
