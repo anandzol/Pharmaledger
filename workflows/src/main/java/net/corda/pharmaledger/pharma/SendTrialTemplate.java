@@ -1,4 +1,4 @@
-package net.corda.pharmaledger.medical;
+package net.corda.pharmaledger.pharma;
 
 import java.security.PublicKey;
 import java.util.Arrays;
@@ -27,54 +27,45 @@ import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.pharmaledger.accountUtilities.NewKeyForAccount;
-import net.corda.pharmaledger.medical.contracts.PatientStateContract;
-import net.corda.pharmaledger.medical.states.PatientState;
+import net.corda.pharmaledger.pharma.contracts.TrialTemplateStateContract;
+import net.corda.pharmaledger.pharma.states.TrialTemplateState;
 
 @InitiatingFlow
 @StartableByRPC
-public class SendPatientData extends FlowLogic<String>{
+public class SendTrialTemplate extends FlowLogic<String>{
+    private String trialTemplateID;
+    private String trialResult;
+    private String trialDirection;
+    private String fromPharma;
+    private String toMedical;
 
-    private int patientID;
-    private String shipmentMappingID;
-    private String medicalStaff;
-    private String fromMedical;
-    private String toPharma;
-    private int Age;
-    private String Gender;
-    private int Weight; 
-    private int Height;
 
-    public SendPatientData(int patientID, String shipmentMappingID, String medicalStaff, String fromMedical, String toPharma, int Age, String Gender, int Weight, int Height) {
-        this.patientID = patientID;
-        this.shipmentMappingID = shipmentMappingID;
-        this.medicalStaff = medicalStaff;
-        this.fromMedical = fromMedical;
-        this.toPharma = toPharma;
-        this.Age = Age;
-        this.Gender = Gender;
-        this.Weight = Weight;
-        this.Height = Height;
+    public SendTrialTemplate(String trialTemplateID, String trialResult, String trialDirection, String fromPharma, String toMedical) {
+        this.trialTemplateID = trialTemplateID;
+        this.trialResult = trialResult;
+        this.trialDirection = trialDirection;
+        this.fromPharma = fromPharma;
+        this.toMedical = toMedical;
     }
 
-    
+
     @Override
     @Suspendable
     public String call() throws FlowException {
-        
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
-        AccountInfo myAccount = accountService.accountInfo(fromMedical).get(0).getState().getData();
+        AccountInfo myAccount = accountService.accountInfo(fromPharma).get(0).getState().getData();
         PublicKey myKey = subFlow(new NewKeyForAccount(myAccount.getIdentifier().getId())).getOwningKey();
 
-        AccountInfo targetAccount = accountService.accountInfo(toPharma).get(0).getState().getData();
+        AccountInfo targetAccount = accountService.accountInfo(toMedical).get(0).getState().getData();
         AnonymousParty targetAcctAnonymousParty = subFlow(new RequestKeyForAccount(targetAccount));
 
-        PatientState patientData = new PatientState(patientID, shipmentMappingID, medicalStaff, Age, Gender, Height, Weight, new AnonymousParty(myKey), targetAcctAnonymousParty);
+        TrialTemplateState trialTemplate = new TrialTemplateState(trialTemplateID, trialResult, trialDirection, new AnonymousParty(myKey), targetAcctAnonymousParty);
 
         final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
         TransactionBuilder txbuilder = new TransactionBuilder(notary)
-                .addOutputState(patientData)
-                .addCommand(new PatientStateContract.Commands.Create(), Arrays.asList(targetAcctAnonymousParty.getOwningKey(),myKey));
+                .addOutputState(trialTemplate)
+                .addCommand(new TrialTemplateStateContract.Commands.Create(), Arrays.asList(targetAcctAnonymousParty.getOwningKey(),myKey));
 
         SignedTransaction locallySignedTx = getServiceHub().signInitialTransaction(txbuilder,Arrays.asList(getOurIdentity().getOwningKey(),myKey));
         FlowSession sessionForAccountToSendTo = initiateFlow(targetAccount.getHost());
@@ -86,17 +77,20 @@ public class SendPatientData extends FlowLogic<String>{
         subFlow(new FinalityFlow(signedByCounterParty,
                 Arrays.asList(sessionForAccountToSendTo).stream().filter(it -> it.getCounterparty() != getOurIdentity()).collect(Collectors.toList())));
 
-        return "Successfully sent for patient ID:" + patientID;
+
+        return "Successfully sent data for template with ID: " + trialTemplateID;
     }
-}
     
-@InitiatedBy(SendPatientData.class)
-class SendPatientDataResponder extends FlowLogic<Void> {
+}
+
+
+@InitiatedBy(SendTrialTemplate.class)
+class SendTrialTemplateResponder extends FlowLogic<Void> {
     //private variable
     private FlowSession counterpartySession;
 
     //Constructor
-    public SendPatientDataResponder(FlowSession counterpartySession) {
+    public SendTrialTemplateResponder(FlowSession counterpartySession) {
         this.counterpartySession = counterpartySession;
     }
 
