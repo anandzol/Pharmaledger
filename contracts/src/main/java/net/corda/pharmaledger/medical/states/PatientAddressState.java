@@ -13,14 +13,16 @@ import net.corda.pharmaledger.medical.contracts.PatientAddressStateContract;
 public class PatientAddressState implements ContractState {
     private String shipmentMappingID;
     private String patientAddress;
+    private String patientMailID;
     private AnonymousParty fromMedical;
     private AnonymousParty toLogistics;
     private List<AbstractParty> participants;
 
 
-    public PatientAddressState(String shipmentMappingID, String patientAddress, AnonymousParty fromMedical, AnonymousParty toLogistics) {
+    public PatientAddressState(String shipmentMappingID, String patientAddress, String patientMailID, AnonymousParty fromMedical, AnonymousParty toLogistics) {
         this.shipmentMappingID = shipmentMappingID;
         this.patientAddress = patientAddress;
+        this.patientMailID = patientMailID;
         this.fromMedical = fromMedical;
         this.toLogistics = toLogistics;
         this.participants = new ArrayList<AbstractParty>();
@@ -35,9 +37,6 @@ public class PatientAddressState implements ContractState {
     public void setShipmentMappingID(String shipmentMappingID) {
         this.shipmentMappingID = shipmentMappingID;
     }
-    public void setParticipants(List<AbstractParty> participants) {
-        this.participants = participants;
-    }
 
     public String getPatientAddress() {
         return this.patientAddress;
@@ -45,6 +44,14 @@ public class PatientAddressState implements ContractState {
 
     public void setPatientAddress(String patientAddress) {
         this.patientAddress = patientAddress;
+    }
+
+    public String getPatientMailID() {
+        return this.patientMailID;
+    }
+
+    public void setPatientMailID(String patientMailID) {
+        this.patientMailID = patientMailID;
     }
 
     public AnonymousParty getFromMedical() {
