@@ -21,11 +21,12 @@ public class PatientStateContract implements Contract {
 			PatientState patient = (PatientState) outputs.get(0);
 			require.using("ID should be greater than 0", patient.getPatientID() > 0);
 			require.using("Name should not be empty", !StringUtils.isEmpty(patient.getMediStaff()));
-			//require.using("Weight should not be greater than 200KGs", patient.getPatientBiometricData().get(Constants.BIOMETRIC_WEIGHT).getAsInt() > 200);
-			//require.using("Age should not be greater than 150", patient.getPatientBiometricData().get(Constants.BIOMETRIC_AGE).getAsInt() > 150);
-			//require.using("Height should not be greater than 300cm", patient.getPatientBiometricData().get(Constants.BIOMETRIC_HEIGHT).getAsInt() > 300);
-			//require.using("Gender should not be empty", !StringUtils.isEmpty(patient.getPatientBiometricData().get(Constants.BIOMETRIC_GENDER).getAsString()));
-			//require.using("Blood Type should not be empty", !StringUtils.isEmpty(patient.getPatientBiometricData().get(Constants.BIOMETRIC_BLOODTYPE).getAsString()));
+			require.using("Shipment Mapping ID should not be empty", !StringUtils.isEmpty(patient.getShipmentMappingID()));
+			require.using("Medical Staff Details should not be empty", !StringUtils.isEmpty(patient.getMediStaff()));
+			require.using("Age should be positive value", patient.getAge() >= 0);
+			require.using("Weight should be positive value", patient.getWeight() > 0);
+			require.using("Height should be positive value", patient.getHeight() > 0);
+			require.using("Gender should not be empty", !StringUtils.isEmpty(patient.getGender()));
 			return null;
 		});
 	}

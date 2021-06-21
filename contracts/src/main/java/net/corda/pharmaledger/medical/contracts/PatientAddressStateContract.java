@@ -22,11 +22,7 @@ public class PatientAddressStateContract implements Contract {
 			PatientAddressState patientAddress = (PatientAddressState) outputs.get(0);
 			require.using("Address should not be empty", !StringUtils.isEmpty(patientAddress.getPatientAddress()));
 			require.using("Shipment Mapping ID should not be empty", !StringUtils.isEmpty(patientAddress.getShipmentMappingID()));
-			//require.using("Weight should not be greater than 200KGs", patient.getPatientBiometricData().get(Constants.BIOMETRIC_WEIGHT).getAsInt() > 200);
-			//require.using("Age should not be greater than 150", patient.getPatientBiometricData().get(Constants.BIOMETRIC_AGE).getAsInt() > 150);
-			//require.using("Height should not be greater than 300cm", patient.getPatientBiometricData().get(Constants.BIOMETRIC_HEIGHT).getAsInt() > 300);
-			//require.using("Gender should not be empty", !StringUtils.isEmpty(patient.getPatientBiometricData().get(Constants.BIOMETRIC_GENDER).getAsString()));
-			//require.using("Blood Type should not be empty", !StringUtils.isEmpty(patient.getPatientBiometricData().get(Constants.BIOMETRIC_BLOODTYPE).getAsString()));
+			require.using("Email ID should not be empty", !StringUtils.isEmpty(patientAddress.getPatientMailID()));
 			return null;
 		});
     }

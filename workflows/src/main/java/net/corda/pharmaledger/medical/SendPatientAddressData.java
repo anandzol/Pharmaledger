@@ -35,13 +35,15 @@ import net.corda.pharmaledger.medical.states.PatientAddressState;
 public class SendPatientAddressData extends FlowLogic<String> {
     private String shipmentMappingID;
     private String patientAddress;
+    private String patientMailID;
     private String fromMedical;
     private String toLogistics;
 
 
-    public SendPatientAddressData(String shipmentMappingID, String patientAddress, String fromMedical, String toLogistics) {
+    public SendPatientAddressData(String shipmentMappingID, String patientAddress, String patientMailID, String fromMedical, String toLogistics) {
         this.shipmentMappingID = shipmentMappingID;
         this.patientAddress = patientAddress;
+        this.patientMailID = patientMailID;
         this.fromMedical = fromMedical;
         this.toLogistics = toLogistics;
     }
@@ -57,7 +59,7 @@ public class SendPatientAddressData extends FlowLogic<String> {
         AccountInfo targetAccount = accountService.accountInfo(toLogistics).get(0).getState().getData();
         AnonymousParty targetAcctAnonymousParty = subFlow(new RequestKeyForAccount(targetAccount));
 
-        PatientAddressState patientAddressData = new PatientAddressState(shipmentMappingID, patientAddress, new AnonymousParty(myKey), targetAcctAnonymousParty);
+        PatientAddressState patientAddressData = new PatientAddressState(shipmentMappingID, patientAddress, patientMailID, new AnonymousParty(myKey), targetAcctAnonymousParty);
 
         final Party notary = getServiceHub().getNetworkMapCache().getNotaryIdentities().get(0);
 
