@@ -30,6 +30,7 @@ import net.corda.core.transactions.SignedTransaction;
 import net.corda.core.transactions.TransactionBuilder;
 import net.corda.pharmaledger.accountUtilities.NewKeyForAccount;
 import net.corda.pharmaledger.medical.states.PatientAddressState;
+import net.corda.pharmaledger.medical.states.PatientState;
 import net.corda.pharmaledger.pharma.contracts.ShipmentRequestStateContract;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
 
@@ -53,6 +54,15 @@ public class SendShipmentRequest extends FlowLogic<String> {
     @Override
     @Suspendable
     public String call() throws FlowException {
+
+        List<StateAndRef<PatientState>> patientStateAndRefs = getServiceHub().getVaultService()
+        .queryBy(PatientState.class).getStates();
+
+        StateAndRef<PatientState> inputStateAndRef = patientStateAndRefs.stream().filter(patientStateAndRef -> {
+            PatientState patientstate = patientStateAndRef.getState().getData();
+            return patientstate.getShipmentMappingID().equals(shipmentMappingID);
+        }).findAny().orElseThrow(() -> new IllegalArgumentException("Shipment MappingID Not Found"));
+
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
         AccountInfo myAccount = accountService.accountInfo(fromPharma).get(0).getState().getData();
         PublicKey myKey = subFlow(new NewKeyForAccount(myAccount.getIdentifier().getId())).getOwningKey();

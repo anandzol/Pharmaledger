@@ -11,6 +11,7 @@ import com.r3.corda.lib.accounts.workflows.services.AccountService;
 import com.r3.corda.lib.accounts.workflows.services.KeyManagementBackedAccountService;
 
 import co.paralleluniverse.fibers.Suspendable;
+import net.corda.core.contracts.StateAndRef;
 import net.corda.core.crypto.TransactionSignature;
 import net.corda.core.flows.CollectSignatureFlow;
 import net.corda.core.flows.FinalityFlow;
@@ -29,7 +30,7 @@ import net.corda.core.transactions.TransactionBuilder;
 import net.corda.pharmaledger.accountUtilities.NewKeyForAccount;
 import net.corda.pharmaledger.pharma.contracts.KitShipmentStateContract;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
-
+import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
 @InitiatingFlow
 @StartableByRPC
 public class sendKitShipmentDetails  extends FlowLogic<String>{
@@ -51,6 +52,15 @@ public class sendKitShipmentDetails  extends FlowLogic<String>{
     @Suspendable
     @Override
     public String call() throws FlowException {
+
+        List<StateAndRef<ShipmentRequestState>> shipmentRequestStateAndRefs = getServiceHub().getVaultService()
+        .queryBy(ShipmentRequestState.class).getStates();
+
+        StateAndRef<ShipmentRequestState> inputStateAndRef = shipmentRequestStateAndRefs.stream().filter(shipmentRequestStateAndRef -> {
+            ShipmentRequestState shipmentRequeststate = shipmentRequestStateAndRef.getState().getData();
+            return shipmentRequeststate.getPackageID().equals(packageID);
+        }).findAny().orElseThrow(() -> new IllegalArgumentException("Package ID Not Found"));
+
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
         AccountInfo myAccount = accountService.accountInfo(fromPharma).get(0).getState().getData();
         PublicKey myKey = subFlow(new NewKeyForAccount(myAccount.getIdentifier().getId())).getOwningKey();
