@@ -63,7 +63,7 @@ public class UpdateShipmentTracker extends FlowLogic<String>{
         StateAndRef<ShipmentState> inputStateAndRef = ShipmentStateAndRefs.stream().filter(ShipmentStateAndRef -> {
             ShipmentState shipmentstate = ShipmentStateAndRef.getState().getData();
             return shipmentstate.getpackageID().equals(packageID);
-        }).findAny().orElseThrow(() -> new IllegalArgumentException("Shipment MappingID Not Found"));
+        }).findAny().orElseThrow(() -> new IllegalArgumentException("PackageID Not Found"));
         
        
         ShipmentState shipment = new ShipmentState(packageID, status, new AnonymousParty(myKey), targetAcctAnonymousParty);
