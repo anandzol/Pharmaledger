@@ -11,7 +11,7 @@ import net.corda.pharmaledger.logistics.contracts.ShipmentStateContract;
 
 @BelongsToContract(ShipmentStateContract.class)
 public class ShipmentState implements ContractState{
-    private String shipmentMappingID; 
+    private String packageID; 
     //currently using this state only for the view from pharma account
     private String status;
     private AnonymousParty fromLogistics;
@@ -19,8 +19,8 @@ public class ShipmentState implements ContractState{
     private List<AbstractParty> participants;
 
 
-    public ShipmentState(String shipmentMappingID, String status, AnonymousParty fromLogistics, AnonymousParty toPharma) {
-        this.shipmentMappingID = shipmentMappingID;
+    public ShipmentState(String packageID, String status, AnonymousParty fromLogistics, AnonymousParty toPharma) {
+        this.packageID = packageID;
         this.status = status;
         this.fromLogistics = fromLogistics;
         this.toPharma = toPharma;
@@ -29,12 +29,12 @@ public class ShipmentState implements ContractState{
         this.participants.add(toPharma);
     }
 
-    public String getShipmentMappingID() {
-        return this.shipmentMappingID;
+    public String getpackageID() {
+        return this.packageID;
     }
 
-    public void setShipmentMappingID(String shipmentMappingID) {
-        this.shipmentMappingID = shipmentMappingID;
+    public void setpackageID(String packageID) {
+        this.packageID = packageID;
     }
 
     public String getStatus() {
