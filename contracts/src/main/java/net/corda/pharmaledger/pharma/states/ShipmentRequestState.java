@@ -9,6 +9,7 @@ import net.corda.core.identity.AbstractParty;
 import net.corda.core.identity.AnonymousParty;
 import net.corda.pharmaledger.pharma.contracts.ShipmentRequestStateContract;
 
+
 @BelongsToContract(ShipmentRequestStateContract.class)
 public class ShipmentRequestState implements ContractState {
     private String shipmentMappingID;

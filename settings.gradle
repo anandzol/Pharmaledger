@@ -1,5 +1,5 @@
 //include 'logistics-client'
-//include 'pharma-client'
+include 'pharma-client'
 //include 'patient-client'
 //include 'medical-client'
 include 'workflows'

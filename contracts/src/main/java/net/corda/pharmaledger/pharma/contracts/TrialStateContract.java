@@ -21,7 +21,6 @@ public class TrialStateContract implements Contract {
 			TrialState trial = (TrialState) outputs.get(0);
 			require.using("ID should be greater than 0", trial.getTrialID() > 0);
             require.using("Status should not be empty", !StringUtils.isEmpty(trial.getStatus()));
-            require.using("Trial Patients should not be empty", !StringUtils.isEmpty(trial.getTrialPatients()));
             require.using("Trial Template should not be empty", !StringUtils.isEmpty(trial.getTrialTemplateID()));
             require.using("Start Date should not be empty", trial.getStartDate() != null);
 			return null;

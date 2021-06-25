@@ -1,10 +1,10 @@
-package net.corda.samples.example.webserver;
+package net.corda.pharmaledger.pharma.webserver;
+
+import static org.springframework.boot.WebApplicationType.SERVLET;
 
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import static org.springframework.boot.WebApplicationType.SERVLET;
 
 /**
  * Our Spring Boot application.

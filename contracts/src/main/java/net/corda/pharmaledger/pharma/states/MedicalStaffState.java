@@ -11,13 +11,13 @@ import net.corda.pharmaledger.pharma.contracts.MedicalStaffStateContract;
 
 @BelongsToContract(MedicalStaffStateContract.class)
 public class MedicalStaffState implements ContractState {
-    private int staffID;
+    private String staffID;
     private String staffName;
     private String proficiency;
     private List<AbstractParty> participants;
 
 
-    public MedicalStaffState(int staffID, String staffName, String proficiency, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
+    public MedicalStaffState(String staffID, String staffName, String proficiency, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
         this.staffID = staffID;
         this.staffName = staffName;
         this.proficiency = proficiency;
@@ -27,11 +27,11 @@ public class MedicalStaffState implements ContractState {
     }
 
 
-    public int getStaffID() {
+    public String getStaffID() {
         return this.staffID;
     }
 
-    public void setStaffID(int staffID) {
+    public void setStaffID(String staffID) {
         this.staffID = staffID;
     }
 
