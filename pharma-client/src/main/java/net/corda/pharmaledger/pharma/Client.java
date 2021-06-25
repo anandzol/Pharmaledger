@@ -1,4 +1,11 @@
-package net.corda.samples.example;
+package net.corda.pharmaledger.pharma;
+
+import static net.corda.core.utilities.NetworkHostAndPort.parse;
+
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.corda.client.rpc.CordaRPCClient;
 import net.corda.client.rpc.CordaRPCConnection;
@@ -6,12 +13,6 @@ import net.corda.core.identity.CordaX500Name;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
 import net.corda.core.utilities.NetworkHostAndPort;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-
-import static net.corda.core.utilities.NetworkHostAndPort.parse;
 
 /**
  * Connects to a Corda node via RPC and performs RPC operations on the node.
