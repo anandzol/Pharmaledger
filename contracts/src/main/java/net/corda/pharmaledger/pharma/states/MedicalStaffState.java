@@ -14,16 +14,20 @@ public class MedicalStaffState implements ContractState {
     private String staffID;
     private String staffName;
     private String proficiency;
+    private AnonymousParty fromPharma;
+    private AnonymousParty toMedical;
     private List<AbstractParty> participants;
 
 
-    public MedicalStaffState(String staffID, String staffName, String proficiency, AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
+    public MedicalStaffState(String staffID, String staffName, String proficiency, AnonymousParty fromPharma, AnonymousParty toMedical) {
         this.staffID = staffID;
         this.staffName = staffName;
         this.proficiency = proficiency;
+        this.fromPharma = fromPharma;
+        this.toMedical = toMedical;
         this.participants = new ArrayList<AbstractParty>();
-        participants.add(medicalAccount);
-        participants.add(pharmaAccount);
+        participants.add(fromPharma);
+        participants.add(toMedical);
     }
 
 
@@ -51,6 +55,21 @@ public class MedicalStaffState implements ContractState {
         this.proficiency = proficiency;
     }
 
+    public AnonymousParty getFromPharma() {
+        return this.fromPharma;
+    }
+
+    public void setFromPharma(AnonymousParty fromPharma) {
+        this.fromPharma = fromPharma;
+    }
+
+    public AnonymousParty getToMedical() {
+        return this.toMedical;
+    }
+
+    public void setToMedical(AnonymousParty toMedical) {
+        this.toMedical = toMedical;
+    }
 
     @Override
     public List<AbstractParty> getParticipants() {
