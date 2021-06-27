@@ -339,7 +339,7 @@ public class Controller {
         List<StateAndRef<MedicalStaffState>> staff = proxy.vaultQuery(MedicalStaffState.class).getStates().stream().filter(
             it -> it.getState().getData().getStaffID().equals(staffID)).collect(Collectors.toList());
         if (staff.isEmpty()) {
-            throw new IllegalArgumentException("No such kit exist");
+            throw new IllegalArgumentException("No Patient exist");
         }
         return ResponseEntity.ok(staff);
     }
