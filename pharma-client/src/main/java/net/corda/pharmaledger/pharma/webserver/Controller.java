@@ -37,6 +37,8 @@ import net.corda.core.node.NodeInfo;
 import net.corda.core.node.services.Vault;
 import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria;
+import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
+import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
 import net.corda.pharmaledger.medical.states.PatientEvaluationState;
 import net.corda.pharmaledger.medical.states.PatientState;
 import net.corda.pharmaledger.pharma.DeleteMedicalStaffData;
@@ -45,6 +47,7 @@ import net.corda.pharmaledger.pharma.SendMedicalStaffData;
 import net.corda.pharmaledger.pharma.SendShipmentRequest;
 import net.corda.pharmaledger.pharma.SendTrial;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
+import net.corda.pharmaledger.pharma.states.MedicalStaffState;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
 
 /**
@@ -143,6 +146,31 @@ public class Controller {
     @GetMapping(value = "/states", produces = TEXT_PLAIN_VALUE)
     public String states() {
         return proxy.vaultQuery(ContractState.class).getStates().toString();
+    }
+
+    //APIs for Account Management
+
+    @PostMapping(value = "/accounts/createaccount", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> createAccount(HttpServletRequest request) {
+        String acctName = request.getParameter("acctName");
+        try {
+            String result = proxy.startTrackedFlowDynamic(CreateNewAccount.class, acctName).getReturnValue().get();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/accounts/shareaccountto", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> shareAccountTo(HttpServletRequest request) {
+        String acctName = request.getParameter("acctName");
+        String shareTo = request.getParameter("shareTo");
+        try {
+            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, shareTo).getReturnValue().get();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     //Participant Management APIs
@@ -278,7 +306,7 @@ public class Controller {
         }
     }
 
-    @PostMapping(value = "/medical/createstaff/{staffID}", produces = TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/medical/deletestaff", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> deleteStaff(HttpServletRequest request) {
         String staffID = request.getParameter("staffID");
         String fromPharma = request.getParameter("fromPharma");
@@ -292,5 +320,20 @@ public class Controller {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    @GetMapping(value = "/medical/getallstaff", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<MedicalStaffState>>> getAllStaff() {
+        return ResponseEntity.ok(proxy.vaultQuery(MedicalStaffState.class).getStates());
+    }
+
+    @GetMapping(value = "/medical/getstaff/{staffID}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<MedicalStaffState>>> getStaff(@PathVariable String staffID) {
+        List<StateAndRef<MedicalStaffState>> staff = proxy.vaultQuery(MedicalStaffState.class).getStates().stream().filter(
+            it -> it.getState().getData().getStaffID().equals(staffID)).collect(Collectors.toList());
+        if (staff.isEmpty()) {
+            throw new IllegalArgumentException("No such kit exist");
+        }
+        return ResponseEntity.ok(staff);
     }
 }
