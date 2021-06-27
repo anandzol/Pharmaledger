@@ -19,8 +19,10 @@ import net.corda.core.flows.FlowException;
 import net.corda.core.flows.FlowLogic;
 import net.corda.core.flows.FlowSession;
 import net.corda.core.flows.InitiatedBy;
+import net.corda.core.flows.InitiatingFlow;
 import net.corda.core.flows.ReceiveFinalityFlow;
 import net.corda.core.flows.SignTransactionFlow;
+import net.corda.core.flows.StartableByRPC;
 import net.corda.core.identity.AnonymousParty;
 import net.corda.core.identity.Party;
 import net.corda.core.transactions.SignedTransaction;
@@ -29,6 +31,8 @@ import net.corda.pharmaledger.accountUtilities.NewKeyForAccount;
 import net.corda.pharmaledger.medical.contracts.PatientStateContract;
 import net.corda.pharmaledger.pharma.states.MedicalStaffState;
 
+@InitiatingFlow
+@StartableByRPC
 public class DeleteMedicalStaffData extends FlowLogic<String> {
     private String staffID;
     private String fromPharma;
