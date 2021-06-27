@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
  * Define your API endpoints here.
  */
 @RestController
-@RequestMapping("/") // The paths for HTTP requests are relative to this base path.
+@RequestMapping("/v1/logistics") // The paths for HTTP requests are relative to this base path.
 public class Controller {
     private static final Logger logger = LoggerFactory.getLogger(RestController.class);
     private final CordaRPCOps proxy;
