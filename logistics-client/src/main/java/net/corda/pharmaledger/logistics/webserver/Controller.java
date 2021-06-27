@@ -1,4 +1,4 @@
-package net.corda.samples.example.webserver;
+package net.corda.pharmaledger.logistics.webserver;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.corda.client.jackson.JacksonSupport;
@@ -7,14 +7,16 @@ import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
-import net.corda.core.transactions.SignedTransaction;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 
-import net.corda.samples.example.flows.ExampleFlow;
-import net.corda.samples.example.states.IOUState;
+import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
+import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
+import net.corda.pharmaledger.logistics.ShipmentTracker;
+import net.corda.pharmaledger.logistics.UpdateShipmentTracker;
+
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.slf4j.Logger;
@@ -139,44 +141,65 @@ public class Controller {
         myMap.put("me", me.toString());
         return myMap;
     }
-    @GetMapping(value = "/ious",produces = APPLICATION_JSON_VALUE)
-    public List<StateAndRef<IOUState>> getIOUs() {
-        // Filter by state type: IOU.
-        return proxy.vaultQuery(IOUState.class).getStates();
-    }
 
-    @PostMapping (value = "create-iou" , produces =  TEXT_PLAIN_VALUE , headers =  "Content-Type=application/x-www-form-urlencoded" )
-    public ResponseEntity<String> issueIOU(HttpServletRequest request) throws IllegalArgumentException {
+    //APIs for Account Management
 
-        int amount = Integer. valueOf(request.getParameter("iouValue"));
-        String party = request.getParameter("partyName");
-        // Get party objects for myself and the counterparty.
-
-        CordaX500Name partyX500Name = CordaX500Name.parse(party);
-        Party otherParty = proxy.wellKnownPartyFromX500Name(partyX500Name);
-
-        // Create a new IOU state using the parameters given.
+    @PostMapping(value = "/accounts/createaccount", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> createAccount(HttpServletRequest request) {
+        String acctName = request.getParameter("acctName");
         try {
-            // Start the IOUIssueFlow. We block and waits for the flow to return.
-            SignedTransaction result = proxy.startTrackedFlowDynamic(ExampleFlow.Initiator.class, amount,otherParty).getReturnValue().get();
-            // Return the response.
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body("Transaction id "+ result.getId() +" committed to ledger.\n " + result.getTx().getOutput(0));
-            // For the purposes of this demo app, we do not differentiate by exception type.
+            String result = proxy.startTrackedFlowDynamic(CreateNewAccount.class, acctName).getReturnValue().get();
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    /**
-     * Displays all IOU states that only this node has been involved in.
-     */
-    @GetMapping(value = "my-ious",produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StateAndRef<IOUState>>> getMyIOUs() {
-        List<StateAndRef<IOUState>> myious = proxy.vaultQuery(IOUState.class).getStates().stream().filter(
-                it -> it.getState().getData().getLender().equals(proxy.nodeInfo().getLegalIdentities().get(0))).collect(Collectors.toList());
-        return ResponseEntity.ok(myious);
+
+    @PostMapping(value = "/accounts/shareaccountto", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> shareAccountTo(HttpServletRequest request) {
+        String acctName = request.getParameter("acctName");
+        String shareTo = request.getParameter("shareTo");
+
+        Set<Party> parties = proxy.partiesFromName(shareTo, false);
+        Iterator it = parties.iterator();
+        
+        try {
+            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, it.next()).getReturnValue().get();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // APIs for Package Management
+
+    @PostMapping(value = "/package/createshipmenttracker", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> createShipmentTracker(HttpServletRequest request) {
+        String packageID = request.getParameter("packageID");
+        String status = request.getParameter("status");
+        String fromLogistics = request.getParameter("fromLogistics");
+        String toPharma = request.getParameter("toPharma");
+
+        try {
+            String result = proxy.startTrackedFlowDynamic(ShipmentTracker.class, packageID, status, fromLogistics, toPharma).getReturnValue().get();
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/package/updateshipmenttracker", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> updateShipmentTracker(HttpServletRequest request) {
+        String packageID = request.getParameter("packageID");
+        String status = request.getParameter("status");
+        String fromLogistics = request.getParameter("fromLogistics");
+        String toPharma = request.getParameter("toPharma");
+
+        try {
+            String result = proxy.startTrackedFlowDynamic(UpdateShipmentTracker.class, packageID, status, fromLogistics, toPharma).getReturnValue().get();
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }

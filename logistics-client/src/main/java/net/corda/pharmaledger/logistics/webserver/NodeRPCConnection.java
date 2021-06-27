@@ -1,4 +1,4 @@
-package net.corda.samples.example.webserver;
+package net.corda.pharmaledger.logistics.webserver;
 
 import net.corda.client.rpc.CordaRPCClient;
 import net.corda.client.rpc.CordaRPCConnection;

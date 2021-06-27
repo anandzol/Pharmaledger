@@ -1,4 +1,4 @@
-package net.corda.samples.example.webserver;
+package net.corda.pharmaledger.logistics.webserver;
 
 import org.springframework.boot.Banner;
 import org.springframework.boot.SpringApplication;
