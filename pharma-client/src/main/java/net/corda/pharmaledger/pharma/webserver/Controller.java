@@ -32,6 +32,7 @@ import net.corda.client.jackson.JacksonSupport;
 import net.corda.core.contracts.ContractState;
 import net.corda.core.contracts.StateAndRef;
 import net.corda.core.identity.CordaX500Name;
+import net.corda.core.identity.Party;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
 import net.corda.core.node.services.Vault;
@@ -165,8 +166,13 @@ public class Controller {
     public ResponseEntity<String> shareAccountTo(HttpServletRequest request) {
         String acctName = request.getParameter("acctName");
         String shareTo = request.getParameter("shareTo");
+        List<NodeInfo> filteredNodes = proxy.networkMapSnapshot().stream()
+                .filter(el -> !isNotary(el) && !isMe(el) && !isNetworkMap(el) && el.getLegalIdentities().get(0).getName().toString().equals(shareTo))
+                .collect(Collectors.toList());
+        Party shareToParty = filteredNodes.get(0).getLegalIdentities().get(0);
+        
         try {
-            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, shareTo).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, shareToParty).getReturnValue().get();
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
