@@ -43,6 +43,7 @@ import net.corda.pharmaledger.pharma.DeleteMedicalStaffData;
 import net.corda.pharmaledger.pharma.EditTrial;
 import net.corda.pharmaledger.pharma.SendMedicalStaffData;
 import net.corda.pharmaledger.pharma.SendShipmentRequest;
+import net.corda.pharmaledger.pharma.SendTrial;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
 
@@ -218,7 +219,7 @@ public class Controller {
         String toMedical = request.getParameter("toMedical");
 
         try {
-            String result = proxy.startTrackedFlowDynamic(EditTrial.class, trialID, trialPatients, trialTemplateID,
+            String result = proxy.startTrackedFlowDynamic(SendTrial.class, trialID, trialPatients, trialTemplateID,
             trialStatus, trialStartDate, trialEndDate, fromPharma, toMedical).getReturnValue().get();
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(result);

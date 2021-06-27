@@ -44,6 +44,7 @@ public class DeleteMedicalStaffData extends FlowLogic<String> {
         this.toMedical = toMedical;
     }
     @Override
+    @Suspendable
     public String call() throws FlowException {
 
         List<StateAndRef<MedicalStaffState>> staffStateAndRefs = getServiceHub().getVaultService()

@@ -46,7 +46,9 @@ public class SendMedicalStaffData extends FlowLogic<String> {
         this.fromPharma = fromPharma;
         this.toMedical = toMedical;
     }
+
     @Override
+    @Suspendable
     public String call() throws FlowException {
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
         AccountInfo myAccount = accountService.accountInfo(fromPharma).get(0).getState().getData();
