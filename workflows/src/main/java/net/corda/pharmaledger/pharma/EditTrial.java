@@ -139,7 +139,7 @@ public class EditTrial extends FlowLogic<String> {
     
 }
 
-@InitiatedBy(SendTrial.class)
+@InitiatedBy(EditTrial.class)
 class EditTrialResponder extends FlowLogic<Void>{
 
     private FlowSession counterpartySession;
