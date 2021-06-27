@@ -6,7 +6,9 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -166,13 +168,12 @@ public class Controller {
     public ResponseEntity<String> shareAccountTo(HttpServletRequest request) {
         String acctName = request.getParameter("acctName");
         String shareTo = request.getParameter("shareTo");
-        List<NodeInfo> filteredNodes = proxy.networkMapSnapshot().stream()
-                .filter(el -> !isNotary(el) && !isMe(el) && !isNetworkMap(el) && el.getLegalIdentities().get(0).getName().toString().equals(shareTo))
-                .collect(Collectors.toList());
-        Party shareToParty = filteredNodes.get(0).getLegalIdentities().get(0);
+
+        Set<Party> parties = proxy.partiesFromName(shareTo, false);
+        Iterator it = parties.iterator();
         
         try {
-            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, shareToParty).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, it.next()).getReturnValue().get();
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
