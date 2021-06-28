@@ -1,6 +1,6 @@
-//include 'logistics-client'
+include 'logistics-client'
 include 'pharma-client'
 //include 'patient-client'
-//include 'medical-client'
+include 'medical-client'
 include 'workflows'
 include 'contracts'
