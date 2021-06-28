@@ -1,24 +1,20 @@
 package net.corda.pharmaledger.medical.webserver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.corda.client.jackson.JacksonSupport;
-import net.corda.core.contracts.*;
-import net.corda.core.identity.CordaX500Name;
-import net.corda.core.identity.Party;
-import net.corda.core.messaging.CordaRPCOps;
-import net.corda.core.node.NodeInfo;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
-import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
-import net.corda.pharmaledger.medical.SendPatientAddressData;
-import net.corda.pharmaledger.medical.SendPatientData;
-import net.corda.pharmaledger.medical.sendPatientEvaluationData;
-import net.corda.pharmaledger.medical.states.PatientState;
-import net.corda.pharmaledger.pharma.states.KitShipmentState;
+import javax.servlet.http.HttpServletRequest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -28,17 +24,26 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import net.corda.client.jackson.JacksonSupport;
+import net.corda.core.contracts.ContractState;
+import net.corda.core.contracts.StateAndRef;
+import net.corda.core.identity.CordaX500Name;
+import net.corda.core.identity.Party;
+import net.corda.core.messaging.CordaRPCOps;
+import net.corda.core.node.NodeInfo;
+import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
+import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
+import net.corda.pharmaledger.medical.SendPatientAddressData;
+import net.corda.pharmaledger.medical.SendPatientData;
+import net.corda.pharmaledger.medical.sendPatientEvaluationData;
+import net.corda.pharmaledger.medical.states.PatientState;
+import net.corda.pharmaledger.pharma.states.KitShipmentState;
 
 /**
  * Define your API endpoints here.
@@ -222,7 +227,7 @@ public class Controller {
     public ResponseEntity<List<StateAndRef<KitShipmentState>>> trackShipment(@PathVariable int patientID) throws IllegalArgumentException {
         List<StateAndRef<PatientState>> patient = proxy.vaultQuery(PatientState.class).getStates().stream().filter(
             it -> it.getState().getData().getPatientID() == patientID).collect(Collectors.toList());
-        if (kits.isEmpty()) {
+        if (patient.isEmpty()) {
             throw new IllegalArgumentException("No such kit exist");
         }
         String shipmentMappingID = patient.get(0).getState().getData().getShipmentMappingID();
