@@ -49,9 +49,11 @@ import net.corda.pharmaledger.pharma.EditTrial;
 import net.corda.pharmaledger.pharma.SendMedicalStaffData;
 import net.corda.pharmaledger.pharma.SendShipmentRequest;
 import net.corda.pharmaledger.pharma.SendTrial;
+import net.corda.pharmaledger.pharma.SendTrialTemplate;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
 import net.corda.pharmaledger.pharma.states.MedicalStaffState;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
+import net.corda.pharmaledger.pharma.states.TrialTemplateState;
 
 /**
  * Define your API endpoints here.
@@ -241,6 +243,38 @@ public class Controller {
     }
 
     // APIs for Trial Management
+
+    @PostMapping(value = "/trials/createtrialtemplate", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> createTrialTemplate(HttpServletRequest request) throws IllegalArgumentException {
+        String trialTemplateID = request.getParameter("trialTemplateID");
+        String trialResult = request.getParameter("trialResult");
+        String trialDirection = request.getParameter("trialDirection");
+        String fromPharma = request.getParameter("fromPharma");
+        String toMedical = request.getParameter("toMedical");
+
+        try {
+            String result = proxy.startTrackedFlowDynamic(SendTrialTemplate.class, trialTemplateID,
+            trialResult, trialDirection, fromPharma, toMedical).getReturnValue().get();
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/trials/getalltrialtemplate", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getAllTemplate() throws IllegalArgumentException {
+        return ResponseEntity.ok(proxy.vaultQuery(TrialTemplateState.class).getStates());
+    }
+
+    @GetMapping(value = "/trials/gettrialtemplate/{templateID}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getTemplate(@PathVariable String templateID) {
+        List<StateAndRef<TrialTemplateState>> trialTemplate = proxy.vaultQuery(TrialTemplateState.class).getStates().stream().filter(
+            it -> it.getState().getData().getTrialTemplateID().equals(templateID)).collect(Collectors.toList());
+        if (trialTemplate.isEmpty()) {
+            throw new IllegalArgumentException("No Trial Template exist");
+        }
+        return ResponseEntity.ok(trialTemplate);
+    }
 
     @PostMapping(value = "/trials/createtrial", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> createTrial(HttpServletRequest request) throws IllegalArgumentException {
