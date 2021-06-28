@@ -50,9 +50,11 @@ import net.corda.pharmaledger.pharma.SendMedicalStaffData;
 import net.corda.pharmaledger.pharma.SendShipmentRequest;
 import net.corda.pharmaledger.pharma.SendTrial;
 import net.corda.pharmaledger.pharma.SendTrialTemplate;
+import net.corda.pharmaledger.pharma.sendKitShipmentDetails;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
 import net.corda.pharmaledger.pharma.states.MedicalStaffState;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
+import net.corda.pharmaledger.pharma.states.TrialState;
 import net.corda.pharmaledger.pharma.states.TrialTemplateState;
 
 /**
@@ -184,7 +186,7 @@ public class Controller {
 
     //Participant Management APIs
 
-    @PostMapping(value = "/participants/assignTrial", produces = TEXT_PLAIN_VALUE)
+    @PostMapping(value = "/participants/assigntrial", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> assignTrial(HttpServletRequest request) throws IllegalArgumentException {
         int patientID = Integer.valueOf(request.getParameter("patientID"));
         int trialID = Integer.valueOf(request.getParameter("trialID"));
@@ -261,7 +263,7 @@ public class Controller {
         }
     }
 
-    @GetMapping(value = "/trials/getalltrialtemplate", produces = TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/trials/getalltrialtemplate", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getAllTemplate() throws IllegalArgumentException {
         return ResponseEntity.ok(proxy.vaultQuery(TrialTemplateState.class).getStates());
     }
@@ -297,6 +299,21 @@ public class Controller {
         }
     }
 
+    @GetMapping(value = "/trials/getalltrials", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialState>>> getAllTrials() throws IllegalArgumentException {
+        return ResponseEntity.ok(proxy.vaultQuery(TrialState.class).getStates());
+    }
+
+    @GetMapping(value = "/trials/gettrial/{trialID}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialState>>> getTrial(@PathVariable int trialID) {
+        List<StateAndRef<TrialState>> trial = proxy.vaultQuery(TrialState.class).getStates().stream().filter(
+            it -> it.getState().getData().getTrialID() == trialID).collect(Collectors.toList());
+        if (trial.isEmpty()) {
+            throw new IllegalArgumentException("No Trial exist");
+        }
+        return ResponseEntity.ok(trial);
+    }
+
     @GetMapping(value = "/trials/trackshipment/{kitID}", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StateAndRef<ShipmentRequestState>>> trackShipment(@PathVariable String kitID) throws IllegalArgumentException {
         List<StateAndRef<KitShipmentState>> kits = proxy.vaultQuery(KitShipmentState.class).getStates().stream().filter(
@@ -317,14 +334,35 @@ public class Controller {
         String packageID = request.getParameter("packageID");
         String fromPharma = request.getParameter("fromPharma");
         String toLogistics = request.getParameter("toLogistics");
+        String kitID = request.getParameter("kitID");
 
         try {
             String result = proxy.startTrackedFlowDynamic(SendShipmentRequest.class, shipmentMappingID, packageID, fromPharma, toLogistics).getReturnValue().get();
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(result);
+            String result1 = proxy.startTrackedFlowDynamic(sendKitShipmentDetails.class, shipmentMappingID, packageID, kitID, fromPharma, toLogistics).getReturnValue().get();
+            return ResponseEntity.status(HttpStatus.CREATED).body(result + "\n" + result1);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
+    }
+
+    @GetMapping(value = "/trials/getallkitshipment", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<KitShipmentState>>> getAllKitShipment() throws IllegalArgumentException {
+        return ResponseEntity.ok(proxy.vaultQuery(KitShipmentState.class).getStates());
+    }
+
+    @GetMapping(value = "/trials/getallshipmentrequest", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<ShipmentRequestState>>> getAllShipmentRequest() throws IllegalArgumentException {
+        return ResponseEntity.ok(proxy.vaultQuery(ShipmentRequestState.class).getStates());
+    }
+
+    @GetMapping(value = "/trials/getshipmentrequest/{packageID}", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<ShipmentRequestState>>> getShipmentRequest(@PathVariable int packageID) {
+        List<StateAndRef<ShipmentRequestState>> trial = proxy.vaultQuery(ShipmentRequestState.class).getStates().stream().filter(
+            it -> it.getState().getData().getPackageID().equals(packageID)).collect(Collectors.toList());
+        if (trial.isEmpty()) {
+            throw new IllegalArgumentException("No Trial exist");
+        }
+        return ResponseEntity.ok(trial);
     }
 
     // APIs for Medical Management
