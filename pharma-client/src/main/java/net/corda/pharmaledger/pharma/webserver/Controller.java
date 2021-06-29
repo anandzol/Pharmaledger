@@ -5,16 +5,19 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.r3.corda.lib.accounts.contracts.states.AccountInfo;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -155,6 +158,11 @@ public class Controller {
         return proxy.vaultQuery(ContractState.class).getStates().toString();
     }
 
+    public StateAndRef<AccountInfo> getAccountInfobyName(String accountName) {
+        List<StateAndRef<AccountInfo>> accounts = proxy.vaultQuery(AccountInfo.class).getStates();
+        return accounts.stream().filter(account -> account.getState().getData().getName().equals(accountName)).findAny().orElse(null);
+    }
+
     //APIs for Account Management
 
     @PostMapping(value = "/accounts/createaccount", produces = TEXT_PLAIN_VALUE)
@@ -206,7 +214,7 @@ public class Controller {
     }
 
     @GetMapping(value = "/participants/getallparticipants", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StateAndRef<PatientState>>> getallparticipants() {
+    public ResponseEntity<List<StateAndRef<PatientState>>> getallparticipants(HttpServletRequest request) {
         return ResponseEntity.ok(proxy.vaultQuery(PatientState.class).getStates());
     }
 
@@ -264,8 +272,17 @@ public class Controller {
     }
 
     @GetMapping(value = "/trials/getalltrialtemplate", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getAllTemplate() throws IllegalArgumentException {
-        return ResponseEntity.ok(proxy.vaultQuery(TrialTemplateState.class).getStates());
+    public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getAllTemplate(HttpServletRequest request) throws IllegalArgumentException {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity.ok(proxy.vaultQueryByCriteria(generalCriteria, TrialTemplateState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+        
     }
 
     @GetMapping(value = "/trials/gettrialtemplate/{templateID}", produces = APPLICATION_JSON_VALUE)
