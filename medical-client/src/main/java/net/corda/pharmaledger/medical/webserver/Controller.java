@@ -5,16 +5,19 @@ import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.r3.corda.lib.accounts.contracts.states.AccountInfo;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -37,6 +40,8 @@ import net.corda.core.identity.CordaX500Name;
 import net.corda.core.identity.Party;
 import net.corda.core.messaging.CordaRPCOps;
 import net.corda.core.node.NodeInfo;
+import net.corda.core.node.services.vault.QueryCriteria;
+import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria;
 import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
 import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
 import net.corda.pharmaledger.medical.SendPatientAddressData;
@@ -62,21 +67,20 @@ public class Controller {
     }
 
     /** Helpers for filtering the network map cache. */
-    public String toDisplayString(X500Name name){
+    public String toDisplayString(X500Name name) {
         return BCStyle.INSTANCE.toString(name);
     }
 
     private boolean isNotary(NodeInfo nodeInfo) {
-        return !proxy.notaryIdentities()
-                .stream().filter(el -> nodeInfo.isLegalIdentity(el))
+        return !proxy.notaryIdentities().stream().filter(el -> nodeInfo.isLegalIdentity(el))
                 .collect(Collectors.toList()).isEmpty();
     }
 
-    private boolean isMe(NodeInfo nodeInfo){
+    private boolean isMe(NodeInfo nodeInfo) {
         return nodeInfo.getLegalIdentities().get(0).getName().equals(me);
     }
 
-    private boolean isNetworkMap(NodeInfo nodeInfo){
+    private boolean isNetworkMap(NodeInfo nodeInfo) {
         return nodeInfo.getLegalIdentities().get(0).getName().getOrganisation().equals("Network Map Service");
     }
 
@@ -143,14 +147,20 @@ public class Controller {
         return proxy.vaultQuery(ContractState.class).getStates().toString();
     }
 
-    @GetMapping(value = "/me",produces = APPLICATION_JSON_VALUE)
-    private HashMap<String, String> whoami(){
+    @GetMapping(value = "/me", produces = APPLICATION_JSON_VALUE)
+    private HashMap<String, String> whoami() {
         HashMap<String, String> myMap = new HashMap<>();
         myMap.put("me", me.toString());
         return myMap;
     }
 
-    //APIs for Account Management
+    public StateAndRef<AccountInfo> getAccountInfobyName(String accountName) {
+        List<StateAndRef<AccountInfo>> accounts = proxy.vaultQuery(AccountInfo.class).getStates();
+        return accounts.stream().filter(account -> account.getState().getData().getName().equals(accountName)).findAny()
+                .orElse(null);
+    }
+
+    // APIs for Account Management
 
     @PostMapping(value = "/accounts/createaccount", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> createAccount(HttpServletRequest request) {
@@ -170,16 +180,17 @@ public class Controller {
 
         Set<Party> parties = proxy.partiesFromName(shareTo, false);
         Iterator it = parties.iterator();
-        
+
         try {
-            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, it.next()).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, it.next()).getReturnValue()
+                    .get();
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
-    //APIs for Patient Management
+    // APIs for Patient Management
 
     @PostMapping(value = "/patients/createpatients", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> createPatients(HttpServletRequest request) throws IllegalArgumentException {
@@ -197,11 +208,11 @@ public class Controller {
         int Height = Integer.valueOf(request.getParameter("Height"));
 
         try {
-            String result = proxy.startTrackedFlowDynamic(SendPatientData.class, patientID, shipmentMappingID, medicalStaff,
-            fromMedical, toPharma, Age, Gender, Weight, Height).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(SendPatientData.class, patientID, shipmentMappingID,
+                    medicalStaff, fromMedical, toPharma, Age, Gender, Weight, Height).getReturnValue().get();
 
-            String result1 = proxy.startTrackedFlowDynamic(SendPatientAddressData.class, shipmentMappingID, patientAddress, patientMailID,
-                fromMedical, toLogistics).getReturnValue().get();
+            String result1 = proxy.startTrackedFlowDynamic(SendPatientAddressData.class, shipmentMappingID,
+                    patientAddress, patientMailID, fromMedical, toLogistics).getReturnValue().get();
             return ResponseEntity.status(HttpStatus.CREATED).body(result + "\n" + result1);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -209,30 +220,59 @@ public class Controller {
     }
 
     @GetMapping(value = "/patients/getallpatients", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StateAndRef<PatientState>>> getAllPatient() {
-        return ResponseEntity.ok(proxy.vaultQuery(PatientState.class).getStates());
-    }
-
-    @GetMapping(value = "/patients/getpatient/{patientID}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StateAndRef<PatientState>>> getStaff(@PathVariable int patientID) {
-        List<StateAndRef<PatientState>> patient = proxy.vaultQuery(PatientState.class).getStates().stream().filter(
-            it -> it.getState().getData().getPatientID() == patientID).collect(Collectors.toList());
-        if (patient.isEmpty()) {
-            throw new IllegalArgumentException("No Patient exist");
+    public ResponseEntity<List<StateAndRef<PatientState>>> getAllPatient(HttpServletRequest request) {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity.ok(proxy.vaultQueryByCriteria(generalCriteria, PatientState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
         }
-        return ResponseEntity.ok(patient);
     }
 
-    @GetMapping(value = "/patients/getshipments/{patientID}", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StateAndRef<KitShipmentState>>> trackShipment(@PathVariable int patientID) throws IllegalArgumentException {
-        List<StateAndRef<PatientState>> patient = proxy.vaultQuery(PatientState.class).getStates().stream().filter(
-            it -> it.getState().getData().getPatientID() == patientID).collect(Collectors.toList());
+    @GetMapping(value = "/patients/getpatient", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<PatientState>>> getStaff(HttpServletRequest request) {
+        int patientID = Integer.valueOf(request.getParameter("patientID"));
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<PatientState>> patient = proxy.vaultQueryByCriteria(generalCriteria, PatientState.class)
+                    .getStates().stream().filter(it -> it.getState().getData().getPatientID() == patientID)
+                    .collect(Collectors.toList());
+            if (patient.isEmpty()) {
+                throw new IllegalArgumentException("No such Patient exist");
+            }
+            return ResponseEntity.ok(patient);
+        } else {
+            throw new IllegalArgumentException("No such account exist");
+        }
+    }
+
+    @GetMapping(value = "/patients/getshipments", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<KitShipmentState>>> trackShipment(HttpServletRequest request)
+            throws IllegalArgumentException {
+        int patientID = Integer.valueOf(request.getParameter("patientID"));
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<PatientState>> patient = proxy.vaultQuery(PatientState.class).getStates().stream()
+                .filter(it -> it.getState().getData().getPatientID() == patientID).collect(Collectors.toList());
         if (patient.isEmpty()) {
             throw new IllegalArgumentException("No such kit exist");
         }
         String shipmentMappingID = patient.get(0).getState().getData().getShipmentMappingID();
-        return ResponseEntity.ok(proxy.vaultQuery(KitShipmentState.class).getStates().stream().filter(
-            it -> it.getState().getData().getShipmentMappingID().equals(shipmentMappingID)).collect(Collectors.toList()));
+        return ResponseEntity.ok(proxy.vaultQueryByCriteria(generalCriteria, KitShipmentState.class).getStates().stream()
+                .filter(it -> it.getState().getData().getShipmentMappingID().equals(shipmentMappingID))
+                .collect(Collectors.toList()));
+        } else {
+            throw new IllegalArgumentException("No such account exist");
+        }
     }
 
     @PostMapping(value = "/patients/createpatientevaluation", produces = TEXT_PLAIN_VALUE)
@@ -245,8 +285,8 @@ public class Controller {
         String toPharma = request.getParameter("toPharma");
 
         try {
-            String result = proxy.startTrackedFlowDynamic(sendPatientEvaluationData.class, patientID, symptoms, evaluationDate,
-            evaluationResult, fromMedical, toPharma).getReturnValue().get();
+            String result = proxy.startTrackedFlowDynamic(sendPatientEvaluationData.class, patientID, symptoms,
+                    evaluationDate, evaluationResult, fromMedical, toPharma).getReturnValue().get();
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
