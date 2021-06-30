@@ -28,7 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,6 +44,7 @@ import net.corda.core.node.services.vault.QueryCriteria;
 import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria;
 import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
 import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
+import net.corda.pharmaledger.logistics.states.ShipmentState;
 import net.corda.pharmaledger.medical.states.PatientEvaluationState;
 import net.corda.pharmaledger.medical.states.PatientState;
 import net.corda.pharmaledger.pharma.DeleteMedicalStaffData;
@@ -155,6 +155,13 @@ public class Controller {
     @GetMapping(value = "/states", produces = TEXT_PLAIN_VALUE)
     public String states() {
         return proxy.vaultQuery(ContractState.class).getStates().toString();
+    }
+
+    @GetMapping(value = "/me",produces = APPLICATION_JSON_VALUE)
+    private HashMap<String, String> whoami(){
+        HashMap<String, String> myMap = new HashMap<>();
+        myMap.put("me", me.toString());
+        return myMap;
     }
 
     public StateAndRef<AccountInfo> getAccountInfobyName(String accountName) {
@@ -400,7 +407,7 @@ public class Controller {
             QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
             List<StateAndRef<KitShipmentState>> kits = proxy
                     .vaultQueryByCriteria(generalCriteria, KitShipmentState.class).getStates().stream()
-                    .filter(it -> it.getState().getData().getKitID().equals(kitID)).collect(Collectors.toList());
+                    .filter(it -> it.getState().getData().getKitID().contains(kitID)).collect(Collectors.toList());
             if (kits.isEmpty()) {
                 throw new IllegalArgumentException("No such kit exist");
             }
@@ -408,6 +415,27 @@ public class Controller {
             return ResponseEntity.ok(proxy.vaultQuery(ShipmentRequestState.class).getStates().stream()
                     .filter(it -> it.getState().getData().getPackageID().equals(packageID))
                     .collect(Collectors.toList()));
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
+
+    @GetMapping(value = "/trials/trackshipmentbypackageid", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<ShipmentState>>> getShipmentByPackageID(HttpServletRequest request) {
+        String packageID = request.getParameter("packageID");
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<ShipmentState>> trial = proxy
+                    .vaultQueryByCriteria(generalCriteria, ShipmentState.class).getStates().stream()
+                    .filter(it -> it.getState().getData().getpackageID().equals(packageID))
+                    .collect(Collectors.toList());
+            if (trial.isEmpty()) {
+                throw new IllegalArgumentException("No Shipment exist");
+            }
+            return ResponseEntity.ok(trial);
         } else {
             throw new IllegalArgumentException("No Such account exist");
         }
@@ -421,13 +449,14 @@ public class Controller {
         String packageID = request.getParameter("packageID");
         String fromPharma = request.getParameter("fromPharma");
         String toLogistics = request.getParameter("toLogistics");
+        String toMedical = request.getParameter("toMedical");
         String kitID = request.getParameter("kitID");
 
         try {
             String result = proxy.startTrackedFlowDynamic(SendShipmentRequest.class, shipmentMappingID, packageID,
                     fromPharma, toLogistics).getReturnValue().get();
-            String result1 = proxy.startTrackedFlowDynamic(sendKitShipmentDetails.class, shipmentMappingID, packageID,
-                    kitID, fromPharma, toLogistics).getReturnValue().get();
+            String result1 = proxy.startTrackedFlowDynamic(sendKitShipmentDetails.class, packageID, shipmentMappingID,
+                    kitID, fromPharma, toMedical).getReturnValue().get();
             return ResponseEntity.status(HttpStatus.CREATED).body(result + "\n" + result1);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -476,7 +505,7 @@ public class Controller {
                     .filter(it -> it.getState().getData().getPackageID().equals(packageID))
                     .collect(Collectors.toList());
             if (trial.isEmpty()) {
-                throw new IllegalArgumentException("No Trial exist");
+                throw new IllegalArgumentException("No Shipment exist");
             }
             return ResponseEntity.ok(trial);
         } else {

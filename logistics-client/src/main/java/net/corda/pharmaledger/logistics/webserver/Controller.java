@@ -1,21 +1,23 @@
 package net.corda.pharmaledger.logistics.webserver;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.corda.client.jackson.JacksonSupport;
-import net.corda.core.contracts.*;
-import net.corda.core.identity.CordaX500Name;
-import net.corda.core.identity.Party;
-import net.corda.core.messaging.CordaRPCOps;
-import net.corda.core.node.NodeInfo;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
-import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
-import net.corda.pharmaledger.logistics.ShipmentTracker;
-import net.corda.pharmaledger.logistics.UpdateShipmentTracker;
+import javax.servlet.http.HttpServletRequest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.r3.corda.lib.accounts.contracts.states.AccountInfo;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -25,17 +27,25 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.TEXT_PLAIN_VALUE;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import net.corda.client.jackson.JacksonSupport;
+import net.corda.core.contracts.ContractState;
+import net.corda.core.contracts.StateAndRef;
+import net.corda.core.identity.CordaX500Name;
+import net.corda.core.identity.Party;
+import net.corda.core.messaging.CordaRPCOps;
+import net.corda.core.node.NodeInfo;
+import net.corda.core.node.services.vault.QueryCriteria;
+import net.corda.core.node.services.vault.QueryCriteria.VaultQueryCriteria;
+import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
+import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
+import net.corda.pharmaledger.logistics.ShipmentTracker;
+import net.corda.pharmaledger.logistics.UpdateShipmentTracker;
+import net.corda.pharmaledger.medical.states.PatientAddressState;
 
 /**
  * Define your API endpoints here.
@@ -142,6 +152,12 @@ public class Controller {
         return myMap;
     }
 
+    public StateAndRef<AccountInfo> getAccountInfobyName(String accountName) {
+        List<StateAndRef<AccountInfo>> accounts = proxy.vaultQuery(AccountInfo.class).getStates();
+        return accounts.stream().filter(account -> account.getState().getData().getName().equals(accountName)).findAny()
+                .orElse(null);
+    }
+
     //APIs for Account Management
 
     @PostMapping(value = "/accounts/createaccount", produces = TEXT_PLAIN_VALUE)
@@ -202,4 +218,27 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    // Patient Address Management API
+
+    @GetMapping(value = "/patients/getpatientaddress", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<PatientAddressState>>> getStaff(HttpServletRequest request) {
+        String shipmentMappingID = request.getParameter("shipmentMappingID");
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<PatientAddressState>> patient = proxy.vaultQueryByCriteria(generalCriteria, PatientAddressState.class)
+                    .getStates().stream().filter(it -> it.getState().getData().getShipmentMappingID().equals(shipmentMappingID))
+                    .collect(Collectors.toList());
+            if (patient.isEmpty()) {
+                throw new IllegalArgumentException("No such address data exist");
+            }
+            return ResponseEntity.ok(patient);
+        } else {
+            throw new IllegalArgumentException("No such account exist");
+        }
+    }
+    
 }
