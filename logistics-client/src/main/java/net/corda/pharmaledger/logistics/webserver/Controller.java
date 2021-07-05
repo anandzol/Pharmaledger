@@ -46,6 +46,7 @@ import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
 import net.corda.pharmaledger.logistics.ShipmentTracker;
 import net.corda.pharmaledger.logistics.UpdateShipmentTracker;
 import net.corda.pharmaledger.medical.states.PatientAddressState;
+import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
 
 /**
  * Define your API endpoints here.
@@ -240,6 +241,42 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @GetMapping(value = "/package/getallshipmentrequest", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<ShipmentRequestState>>> getAllShipmentRequest(HttpServletRequest request)
+            throws IllegalArgumentException {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity
+                    .ok(proxy.vaultQueryByCriteria(generalCriteria, ShipmentRequestState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
+
+    @GetMapping(value = "/package/getshipmentrequest", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<ShipmentRequestState>>> getShipmentRequest(HttpServletRequest request) {
+        String packageID = request.getParameter("packageID");
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<ShipmentRequestState>> trial = proxy
+                    .vaultQueryByCriteria(generalCriteria, ShipmentRequestState.class).getStates().stream()
+                    .filter(it -> it.getState().getData().getPackageID().equals(packageID))
+                    .collect(Collectors.toList());
+            if (trial.isEmpty()) {
+                throw new IllegalArgumentException("No Shipment exist");
+            }
+            return ResponseEntity.ok(trial);
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
         }
     }
 
