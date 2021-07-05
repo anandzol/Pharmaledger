@@ -183,6 +183,30 @@ public class Controller {
         }
     }
 
+    @PostMapping(value = "/accounts/createandshareaccount", produces = TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> createAndShareAccount(HttpServletRequest request) {
+        String acctName = request.getParameter("acctName");
+        String result = "";
+        try {
+            result = proxy.startTrackedFlowDynamic(CreateNewAccount.class, acctName).getReturnValue().get();
+        } catch (Exception e) {
+            
+        }
+        Stream<NodeInfo> filteredNodes = proxy.networkMapSnapshot().stream()
+                .filter(el -> !isNotary(el) && !isMe(el) && !isNetworkMap(el));
+        List<Party> parties = filteredNodes.map(el -> proxy.partiesFromName(el.getLegalIdentities().get(0).getName().toString(), false).iterator().next())
+                .collect(Collectors.toList());
+        for (int i = 0; i < parties.size(); i++) {
+            try {
+                result = result + "\n" + proxy.startTrackedFlowDynamic(ShareAccountTo.class, acctName, parties.get(i))
+                .getReturnValue().get();
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            }
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @PostMapping(value = "/accounts/shareaccountto", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> shareAccountTo(HttpServletRequest request) {
         String acctName = request.getParameter("acctName");
