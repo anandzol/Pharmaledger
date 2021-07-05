@@ -49,11 +49,11 @@ import net.corda.pharmaledger.medical.states.PatientEvaluationState;
 import net.corda.pharmaledger.medical.states.PatientState;
 import net.corda.pharmaledger.pharma.DeleteMedicalStaffData;
 import net.corda.pharmaledger.pharma.EditTrial;
+import net.corda.pharmaledger.pharma.SendKitShipmentDetails;
 import net.corda.pharmaledger.pharma.SendMedicalStaffData;
 import net.corda.pharmaledger.pharma.SendShipmentRequest;
 import net.corda.pharmaledger.pharma.SendTrial;
 import net.corda.pharmaledger.pharma.SendTrialTemplate;
-import net.corda.pharmaledger.pharma.sendKitShipmentDetails;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
 import net.corda.pharmaledger.pharma.states.MedicalStaffState;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
@@ -204,8 +204,8 @@ public class Controller {
 
     @PostMapping(value = "/participants/assigntrial", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> assignTrial(HttpServletRequest request) throws IllegalArgumentException {
-        int patientID = Integer.valueOf(request.getParameter("patientID"));
-        int trialID = Integer.valueOf(request.getParameter("trialID"));
+        String patientID = request.getParameter("patientID");
+        String trialID = request.getParameter("trialID");
         String fromPharma = request.getParameter("fromPharma");
         String toMedical = request.getParameter("toMedical");
 
@@ -233,14 +233,14 @@ public class Controller {
 
     @GetMapping(value = "/participants/getparticipants", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StateAndRef<PatientState>>> getparticipant(HttpServletRequest request) {
-        int patientID = Integer.valueOf(request.getParameter("patientID"));
+        String patientID = request.getParameter("patientID");
         String accountName = request.getParameter("accountName");
         StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
         if (account != null) {
             UUID accountID = account.getState().getData().getIdentifier().getId();
             QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
             List<StateAndRef<PatientState>> patients = proxy.vaultQueryByCriteria(generalCriteria, PatientState.class)
-                    .getStates().stream().filter(it -> it.getState().getData().getPatientID() == patientID)
+                    .getStates().stream().filter(it -> it.getState().getData().getPatientID().equals(patientID))
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(patients);
@@ -251,7 +251,7 @@ public class Controller {
 
     @GetMapping(value = "/participants/getevaluation", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StateAndRef<PatientEvaluationState>>> getevaluation(HttpServletRequest request) {
-        int patientID = Integer.valueOf(request.getParameter("patientID"));
+        String patientID = request.getParameter("patientID");
         String accountName = request.getParameter("accountName");
         StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
         if (account != null) {
@@ -261,7 +261,7 @@ public class Controller {
             QueryCriteria generalCriteria = accountCriteria.and(stateCriteria);
             List<StateAndRef<PatientEvaluationState>> patients = proxy
                     .vaultQueryByCriteria(generalCriteria, PatientEvaluationState.class).getStates().stream()
-                    .filter(it -> it.getState().getData().getPatientID() == patientID).collect(Collectors.toList());
+                    .filter(it -> it.getState().getData().getPatientID().equals(patientID)).collect(Collectors.toList());
             return ResponseEntity.ok(patients);
         } else {
             throw new IllegalArgumentException("No Such account exist");
@@ -270,7 +270,7 @@ public class Controller {
 
     @PostMapping(value = "/participants/changetrialdates", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> changeTrialDates(HttpServletRequest request) throws IllegalArgumentException {
-        int trialID = Integer.valueOf(request.getParameter("trialID"));
+        String trialID = request.getParameter("trialID");
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
         String fromPharma = request.getParameter("fromPharma");
@@ -343,7 +343,7 @@ public class Controller {
 
     @PostMapping(value = "/trials/createtrial", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> createTrial(HttpServletRequest request) throws IllegalArgumentException {
-        int trialID = Integer.valueOf(request.getParameter("trialID"));
+        String trialID = request.getParameter("trialID");
         String trialPatients = request.getParameter("trialPatients");
         String trialTemplateID = request.getParameter("trialTemplateID");
         String trialStatus = request.getParameter("trialStatus");
@@ -379,13 +379,13 @@ public class Controller {
     public ResponseEntity<List<StateAndRef<TrialState>>> getTrial(HttpServletRequest request)
             throws IllegalArgumentException {
         String accountName = request.getParameter("accountName");
-        int trialID = Integer.valueOf(request.getParameter("trialID"));
+        String trialID = request.getParameter("trialID");
         StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
         if (account != null) {
             UUID accountID = account.getState().getData().getIdentifier().getId();
             QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
             List<StateAndRef<TrialState>> trial = proxy.vaultQueryByCriteria(generalCriteria, TrialState.class)
-                    .getStates().stream().filter(it -> it.getState().getData().getTrialID() == trialID)
+                    .getStates().stream().filter(it -> it.getState().getData().getTrialID().equals(trialID))
                     .collect(Collectors.toList());
             if (trial.isEmpty()) {
                 throw new IllegalArgumentException("No Trial exist");
@@ -455,7 +455,7 @@ public class Controller {
         try {
             String result = proxy.startTrackedFlowDynamic(SendShipmentRequest.class, shipmentMappingID, packageID,
                     fromPharma, toLogistics).getReturnValue().get();
-            String result1 = proxy.startTrackedFlowDynamic(sendKitShipmentDetails.class, packageID, shipmentMappingID,
+            String result1 = proxy.startTrackedFlowDynamic(SendKitShipmentDetails.class, packageID, shipmentMappingID,
                     kitID, fromPharma, toMedical).getReturnValue().get();
             return ResponseEntity.status(HttpStatus.CREATED).body(result + "\n" + result1);
         } catch (Exception e) {

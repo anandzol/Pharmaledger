@@ -11,7 +11,7 @@ import net.corda.pharmaledger.medical.contracts.PatientStateContract;
 
 @BelongsToContract(PatientStateContract.class)
 public class PatientState implements ContractState {
-    private int patientID;
+    private String patientID;
     private String shipmentMappingID;
     private String mediStaff;
     private String patientEvaluation;
@@ -24,7 +24,7 @@ public class PatientState implements ContractState {
     private int height;
     private List<AbstractParty> participants;
 
-    public PatientState(int patientID, String shipmentMappingID, String mediStaff, int Age, String Gender, int weight, int height,AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
+    public PatientState(String patientID, String shipmentMappingID, String mediStaff, int Age, String Gender, int weight, int height,AnonymousParty medicalAccount, AnonymousParty pharmaAccount) {
         this.patientID = patientID;
         this.shipmentMappingID = shipmentMappingID;
         this.mediStaff = mediStaff;
@@ -96,11 +96,11 @@ public class PatientState implements ContractState {
     public void setParticipants(List<AbstractParty> participants) {
         this.participants = participants;
     }
-    public int getPatientID() {
+    public String getPatientID() {
         return this.patientID;
     }
 
-    public void setPatientID(int patientID) {
+    public void setPatientID(String patientID) {
         this.patientID = patientID;
     }
 

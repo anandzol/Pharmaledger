@@ -12,7 +12,7 @@ import net.corda.pharmaledger.pharma.contracts.TrialStateContract;
 
 @BelongsToContract(TrialStateContract.class)
 public class TrialState implements ContractState{
-    private int trialID;
+    private String trialID;
     private String trialPatients; 
     private String trialTemplateID;
     private String status;
@@ -23,7 +23,7 @@ public class TrialState implements ContractState{
     private List<AbstractParty> participants;
 
 
-    public TrialState(int trialID, String trialPatients, String trialTemplateID, String status, Date startDate, Date endDate, AnonymousParty fromPharma, AnonymousParty toMedical) {
+    public TrialState(String trialID, String trialPatients, String trialTemplateID, String status, Date startDate, Date endDate, AnonymousParty fromPharma, AnonymousParty toMedical) {
         this.trialID = trialID;
         this.trialPatients = trialPatients;
         this.trialTemplateID = trialTemplateID;
@@ -38,11 +38,11 @@ public class TrialState implements ContractState{
     }
     
 
-    public int getTrialID() {
+    public String getTrialID() {
         return this.trialID;
     }
 
-    public void setTrialID(int trialID) {
+    public void setTrialID(String trialID) {
         this.trialID = trialID;
     }
 

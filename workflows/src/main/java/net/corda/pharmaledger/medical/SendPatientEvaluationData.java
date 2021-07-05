@@ -37,15 +37,15 @@ import net.corda.pharmaledger.medical.states.PatientState;
 
 @InitiatingFlow
 @StartableByRPC
-public class updatePatientEvaluationData  extends FlowLogic<String> {
-    private int patientID;
+public class SendPatientEvaluationData  extends FlowLogic<String> {
+    private String patientID;
     private String symptoms;
     private String evaluationDate;
     private String  evaluationResult;
     private String fromMedical;
     private String toPharma;
 
-    public updatePatientEvaluationData(int patientID, String symptoms, String evaluationDate, String evaluationResult, String fromMedical, String toPharma) {
+    public SendPatientEvaluationData(String patientID, String symptoms, String evaluationDate, String evaluationResult, String fromMedical, String toPharma) {
         this.patientID = patientID;
         this.symptoms = symptoms;
         this.evaluationDate = evaluationDate;
@@ -62,17 +62,9 @@ public class updatePatientEvaluationData  extends FlowLogic<String> {
 
         StateAndRef<PatientState> inputStateAndRef = patientStateAndRefs.stream().filter(patientStateAndRef -> {
             PatientState patientState = patientStateAndRef.getState().getData();
-            return patientState.getPatientID()==patientID;
+            return patientState.getPatientID().equals(patientID);
         }).findAny().orElseThrow(() -> new IllegalArgumentException("Patient ID Not Found"));
 
-        List<StateAndRef<PatientEvaluationState>> patientEvaluationStateAndRefs = getServiceHub().getVaultService()
-        .queryBy(PatientEvaluationState.class).getStates();
-
-        StateAndRef<PatientEvaluationState> updateinputStateAndRef = patientEvaluationStateAndRefs.stream().filter(patientEvaluationStateAndRef -> {
-            PatientEvaluationState patientEvaluationState = patientEvaluationStateAndRef.getState().getData();
-            return patientEvaluationState.getPatientID()==patientID;
-        }).findAny().orElseThrow(() -> new IllegalArgumentException("Patient ID Not Found"));
-        
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
         AccountInfo myAccount = accountService.accountInfo(fromMedical).get(0).getState().getData();
         PublicKey myKey = subFlow(new NewKeyForAccount(myAccount.getIdentifier().getId())).getOwningKey();
@@ -90,7 +82,6 @@ public class updatePatientEvaluationData  extends FlowLogic<String> {
         PatientEvaluationState patientEvaluationData = new PatientEvaluationState (patientID, symptoms, evaluationDateObject,evaluationResult,  new AnonymousParty(myKey), targetAcctAnonymousParty);
 
         TransactionBuilder txbuilder = new TransactionBuilder(notary)
-        .addInputState(updateinputStateAndRef)
         .addOutputState(patientEvaluationData)
         .addCommand(new PatientEvaluationStateContract.Commands.Create(), Arrays.asList(targetAcctAnonymousParty.getOwningKey(),myKey));
 
@@ -108,13 +99,13 @@ public class updatePatientEvaluationData  extends FlowLogic<String> {
     
 }
 
-@InitiatedBy(updatePatientEvaluationData.class)
-class updatePatientEvaluationDataResponder extends FlowLogic<Void> {
+@InitiatedBy(SendPatientEvaluationData.class)
+class sendPatientEvaluationDataResponder extends FlowLogic<Void> {
     //private variable
     private FlowSession counterpartySession;
 
     //Constructor
-    public updatePatientEvaluationDataResponder(FlowSession counterpartySession) {
+    public sendPatientEvaluationDataResponder(FlowSession counterpartySession) {
         this.counterpartySession = counterpartySession;
     }
 

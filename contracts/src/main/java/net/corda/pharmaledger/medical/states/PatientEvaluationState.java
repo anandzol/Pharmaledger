@@ -12,7 +12,7 @@ import net.corda.pharmaledger.medical.contracts.PatientEvaluationStateContract;
 
 @BelongsToContract(PatientEvaluationStateContract.class)
 public class PatientEvaluationState implements ContractState {
-    private int patientID;
+    private String patientID;
     private String symptoms;
     private Date evaluationDate;
     private String  evaluationResult;
@@ -20,7 +20,7 @@ public class PatientEvaluationState implements ContractState {
     private AnonymousParty toPharma;
     private List<AbstractParty> participants;
 
-    public PatientEvaluationState(int patientID, String symptoms, Date evaluationDate, String evaluationResult, AnonymousParty fromMedical, AnonymousParty toPharma) {
+    public PatientEvaluationState(String patientID, String symptoms, Date evaluationDate, String evaluationResult, AnonymousParty fromMedical, AnonymousParty toPharma) {
         this.patientID = patientID;
         this.symptoms = symptoms;
         this.evaluationDate = evaluationDate;
@@ -32,11 +32,11 @@ public class PatientEvaluationState implements ContractState {
         participants.add(toPharma);
     }
 
-    public int getPatientID() {
+    public String getPatientID() {
         return this.patientID;
     }
 
-    public void setPatientID(int patientID) {
+    public void setPatientID(String patientID) {
         this.patientID = patientID;
     }
 

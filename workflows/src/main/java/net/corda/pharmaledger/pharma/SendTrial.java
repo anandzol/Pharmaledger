@@ -39,7 +39,7 @@ import net.corda.pharmaledger.pharma.states.TrialTemplateState;
 @InitiatingFlow
 @StartableByRPC
 public class SendTrial extends FlowLogic<String> {
-    private int trialID;
+    private String trialID;
     private String trialPatients;
     private String trialTemplateID;
     private String trialStatus;
@@ -49,7 +49,7 @@ public class SendTrial extends FlowLogic<String> {
     private String toMedical;
 
 
-    public SendTrial(int trialID, String trialPatients, String trialTemplateID, String trialStatus, String trialStartDate, String trialEndDate, String fromPharma, String toMedical) {
+    public SendTrial(String trialID, String trialPatients, String trialTemplateID, String trialStatus, String trialStartDate, String trialEndDate, String fromPharma, String toMedical) {
         this.trialID = trialID;
         this.trialPatients = trialPatients;
         this.trialTemplateID = trialTemplateID;
@@ -81,7 +81,7 @@ public class SendTrial extends FlowLogic<String> {
                 .queryBy(PatientState.class).getStates();
                 StateAndRef<PatientState> inputPatientStateAndRef = patientStateAndRefs.stream().filter(patientStateAndRef -> {
                     PatientState patientState = patientStateAndRef.getState().getData();
-                    return patientState.getPatientID() == patientID;
+                    return patientState.getPatientID().equals(patientID);
                 }).findAny().orElseThrow(() -> new IllegalArgumentException("Patient data Not Found"));
         }
         } catch (Exception e) {

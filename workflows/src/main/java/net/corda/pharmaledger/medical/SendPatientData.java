@@ -34,7 +34,7 @@ import net.corda.pharmaledger.medical.states.PatientState;
 @StartableByRPC
 public class SendPatientData extends FlowLogic<String>{
 
-    private int patientID;
+    private String patientID;
     private String shipmentMappingID;
     private String medicalStaff;
     private String fromMedical;
@@ -44,7 +44,7 @@ public class SendPatientData extends FlowLogic<String>{
     private int Weight; 
     private int Height;
 
-    public SendPatientData(int patientID, String shipmentMappingID, String medicalStaff, String fromMedical, String toPharma, int Age, String Gender, int Weight, int Height) {
+    public SendPatientData(String patientID, String shipmentMappingID, String medicalStaff, String fromMedical, String toPharma, int Age, String Gender, int Weight, int Height) {
         this.patientID = patientID;
         this.shipmentMappingID = shipmentMappingID;
         this.medicalStaff = medicalStaff;

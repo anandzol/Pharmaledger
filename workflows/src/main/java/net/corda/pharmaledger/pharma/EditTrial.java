@@ -38,8 +38,8 @@ import net.corda.pharmaledger.pharma.states.TrialState;
 @InitiatingFlow
 @StartableByRPC
 public class EditTrial extends FlowLogic<String> {
-    private int trialID;
-    private int patientID;
+    private String trialID;
+    private String patientID;
     private String fromPharma;
     private String toMedical;
     private String trialStartDate;
@@ -48,7 +48,7 @@ public class EditTrial extends FlowLogic<String> {
     private boolean editDate;
 
 
-    public EditTrial(int trialID, int patientID, String fromPharma, String toMedical) {
+    public EditTrial(String trialID, String patientID, String fromPharma, String toMedical) {
         this.trialID = trialID;
         this.patientID = patientID;
         this.fromPharma = fromPharma;
@@ -56,7 +56,7 @@ public class EditTrial extends FlowLogic<String> {
         this.editPatient = true;
     }
 
-    public EditTrial(int trialID, String trialStartDate, String trialEndDate, String fromPharma, String toMedical) {
+    public EditTrial(String trialID, String trialStartDate, String trialEndDate, String fromPharma, String toMedical) {
         this.trialID = trialID;
         this.trialStartDate = trialStartDate;
         this.trialEndDate = trialEndDate;
@@ -74,7 +74,7 @@ public class EditTrial extends FlowLogic<String> {
 
         StateAndRef<TrialState> inputStateAndRef = trialStateAndRefs.stream().filter(trialStateAndRef -> {
             TrialState trialstate = trialStateAndRef.getState().getData();
-            return trialstate.getTrialID() == trialID;
+            return trialstate.getTrialID().equals(trialID);
         }).findAny().orElseThrow(() -> new IllegalArgumentException("Trial Not Found"));
 
 
@@ -82,7 +82,7 @@ public class EditTrial extends FlowLogic<String> {
         .queryBy(PatientState.class).getStates();
         StateAndRef<PatientState> inputPatientStateAndRef = patientStateAndRefs.stream().filter(patientStateAndRef -> {
         PatientState patientState = patientStateAndRef.getState().getData();
-            return patientState.getPatientID() == patientID;
+            return patientState.getPatientID().equals(patientID);
         }).findAny().orElseThrow(() -> new IllegalArgumentException("Patient data Not Found"));
 
         AccountService accountService = getServiceHub().cordaService(KeyManagementBackedAccountService.class);
@@ -97,9 +97,9 @@ public class EditTrial extends FlowLogic<String> {
         String trialPatients = inputTrial.getTrialPatients();
         if (editPatient) {
             if (trialPatients.isEmpty()) {
-                trialPatients = Integer.toString(patientID);
+                trialPatients = patientID;
             } else {
-                trialPatients = trialPatients + "," + Integer.toString(patientID);
+                trialPatients = trialPatients + "," + patientID;
             }
         }
         Date startDate = inputTrial.getStartDate();

@@ -23,7 +23,7 @@ public class PatientEvaluationStateContract implements Contract{
 			require.using("Evaluation Result should not be empty", !StringUtils.isEmpty(evaluation.getEvaluationResult()));
             require.using("Sypmtoms should not be empty", !StringUtils.isEmpty(evaluation.getSymptoms()));
             require.using("Data should not be empty", evaluation.getEvaluationDate() != null);
-            require.using("Patient ID should be a valid number", evaluation.getPatientID() > 0);
+            require.using("Patient ID should not be empty", !StringUtils.isEmpty(evaluation.getPatientID()));
             return null;
 		});
         

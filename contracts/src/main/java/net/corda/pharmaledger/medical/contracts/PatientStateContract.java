@@ -19,7 +19,7 @@ public class PatientStateContract implements Contract {
 		List<ContractState> outputs = tx.getOutputStates();
 		requireThat(require -> {
 			PatientState patient = (PatientState) outputs.get(0);
-			require.using("ID should be greater than 0", patient.getPatientID() > 0);
+			require.using("ID should not be empty", !StringUtils.isEmpty(patient.getMediStaff()));
 			require.using("Name should not be empty", !StringUtils.isEmpty(patient.getMediStaff()));
 			require.using("Shipment Mapping ID should not be empty", !StringUtils.isEmpty(patient.getShipmentMappingID()));
 			require.using("Medical Staff Details should not be empty", !StringUtils.isEmpty(patient.getMediStaff()));

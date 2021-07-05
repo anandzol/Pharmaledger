@@ -33,7 +33,7 @@ import net.corda.pharmaledger.pharma.states.KitShipmentState;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
 @InitiatingFlow
 @StartableByRPC
-public class sendKitShipmentDetails  extends FlowLogic<String>{
+public class SendKitShipmentDetails  extends FlowLogic<String>{
 
     private String packageID;
     private String shipmentMappingID;
@@ -41,7 +41,7 @@ public class sendKitShipmentDetails  extends FlowLogic<String>{
     private String fromPharma;
     private String toMedical;
 
-    public sendKitShipmentDetails(String packageID, String shipmentMappingID, String kitID, String fromPharma, String toMedical) {
+    public SendKitShipmentDetails(String packageID, String shipmentMappingID, String kitID, String fromPharma, String toMedical) {
         this.packageID = packageID;
         this.shipmentMappingID = shipmentMappingID;
         this.kitID = kitID;
@@ -91,7 +91,7 @@ public class sendKitShipmentDetails  extends FlowLogic<String>{
     
 }
 
-@InitiatedBy(sendKitShipmentDetails.class)
+@InitiatedBy(SendKitShipmentDetails.class)
 class SendKitShipmentDetailsResponder extends FlowLogic<Void> {
     //private variable
     private FlowSession counterpartySession;
