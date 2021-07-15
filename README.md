@@ -1,5 +1,22 @@
-# PharmaLedger - Decentralised Clinical Trials
+# PharmaLedger - Decentralised Clinical Trial
 ![alt text](projectHeader.png "DLT4PI - PharmaLedger")
+* * *
+- [PharmaLedger - Decentralised Clinical Trial](#pharmaledger---decentralised-clinical-trial)
+  - [Team Members](#team-members)
+  - [Architecture](#architecture)
+  - [Documentation](#documentation)
+  - [Requirements](#requirements)
+    - [Java](#java)
+    - [Gradle](#gradle)
+  - [Install CorDapp](#install-cordapp)
+    - [Build the project from root directory](#build-the-project-from-root-directory)
+    - [Deploy Nodes](#deploy-nodes)
+    - [Launcing CorDapp](#launcing-cordapp)
+  - [Install CorDapp using Docker](#install-cordapp-using-docker)
+  - [Running Middleware](#running-middleware)
+  - [Running Frontend](#running-frontend)
+  - [Future Developments](#future-developments)
+  - [Demo](#demo)
 ## Team Members
 |Name | Degree | Mail Address|
 |-----|--------|-------------|
@@ -86,7 +103,7 @@ This command would create nodes directory inside `./build` directory.  We can la
 docker-compose -f ./build/nodes/docker-compose.yml up
 ```
 
-## Run Middleware 
+## Running Middleware 
 Once CorDapp is deployed, launch REST client for Corda Nodes by running following commands from project root directory.
 ```
 # Pharma Client
