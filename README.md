@@ -8,6 +8,11 @@
 |Lukas Volpers| Master in Management and Technology|lukas.volpers@tum.de|
 |Thandayuthapani Subramanian|Master in Informatics|thandayuthapani.subramanian@tum.de|
 
+## Architecture
+<p align="center">
+  <img src="PharmaLedger_Arch.png" />
+</p>
+
 ## Documentation
 Project has been structured into main sub-directories - `./contracts`, `./workflows`, `./pharma-client`, `./medical-client`, `./logistics-client`.  
 `./contracts` - Contains Corda states and Corda Contracts  
