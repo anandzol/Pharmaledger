@@ -144,15 +144,6 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
 
     }
-/*     node {
-        name "O=Patient"
-        p2pPort 10010
-        rpcSettings {
-            address("localhost:10011")
-            adminAddress("localhost:10052")
-        }
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-    }*/
     node {
         name "O=Medical,L=Munich,C=DE"
         p2pPort 10012
@@ -163,6 +154,64 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
 }
+
+task deployNodesDocker(type: net.corda.plugins.Dockerform, dependsOn: ['jar']) {
+    dockerImage="corda/corda-zulu-java1.8-4.6:latest"
+    nodeDefaults {
+        projectCordapp {
+            deploy = false
+        }
+        cordapp("$confidential_id_release_group:ci-workflows:$confidential_id_release_version")
+        cordapp("$accounts_release_group:accounts-contracts:$accounts_release_version")
+        cordapp("$accounts_release_group:accounts-workflows:$accounts_release_version")
+
+        cordapp project(":contracts")
+        cordapp project(":workflows")
+        runSchemaMigration = true
+    }
+    node {
+        name "O=Notary,L=Munich,C=DE"
+        notary = [validating : false]
+        p2pPort 10002
+        rpcSettings {
+            address("0.0.0.0:10003")
+            adminAddress("0.0.0.0:10043")
+        }
+        cordapps = []
+    }
+    node {
+        name "O=Pharma,L=Munich,C=DE"
+        p2pPort 10005
+        rpcSettings {
+            address("0.0.0.0:10006")
+            adminAddress("0.0.0.0:10046")
+        }
+        sshdPort 2223
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+    }
+   node {
+        name "O=Logistics,L=Munich,C=DE"
+        p2pPort 10008
+        rpcSettings {
+            address("0.0.0.0:10009")
+            adminAddress("0.0.0.0:10049")
+        }
+        sshdPort 2224
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+
+    }
+    node {
+        name "O=Medical,L=Munich,C=DE"
+        p2pPort 10012
+        rpcSettings {
+            address("0.0.0.0:10013")
+            adminAddress("0.0.0.0:10053")
+        }
+        sshdPort 2225
+        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
+    }
+}
+
 task installQuasar(type: Copy) {
     destinationDir rootProject.file("lib")
     from(configurations.quasar) {
