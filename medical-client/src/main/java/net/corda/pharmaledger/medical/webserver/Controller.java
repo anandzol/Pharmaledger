@@ -48,6 +48,7 @@ import net.corda.pharmaledger.medical.SendPatientData;
 import net.corda.pharmaledger.medical.SendPatientEvaluationData;
 import net.corda.pharmaledger.medical.states.PatientState;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
+import net.corda.pharmaledger.pharma.states.MedicalStaffState;
 import net.corda.pharmaledger.pharma.states.TrialTemplateState;
 
 /**
@@ -257,7 +258,7 @@ public class Controller {
     }
 
     @GetMapping(value = "/patients/getpatient", produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<StateAndRef<PatientState>>> getStaff(HttpServletRequest request) {
+    public ResponseEntity<List<StateAndRef<PatientState>>> getPatient(HttpServletRequest request) {
         String patientID = request.getParameter("patientID");
         String accountName = request.getParameter("accountName");
         StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
@@ -354,4 +355,39 @@ public class Controller {
             throw new IllegalArgumentException("No Such account exist");
         }
     }
+
+
+    @GetMapping(value = "/staffs/getallstaff", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<MedicalStaffState>>> getAllStaff(HttpServletRequest request) {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity.ok(proxy.vaultQueryByCriteria(generalCriteria, MedicalStaffState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
+
+    @GetMapping(value = "/staffs/getstaffbyid", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<MedicalStaffState>>> getStaff(HttpServletRequest request) {
+        String staffID = request.getParameter("staffID");
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<MedicalStaffState>> staff = proxy.vaultQueryByCriteria(generalCriteria, MedicalStaffState.class)
+                    .getStates().stream().filter(it -> it.getState().getData().getStaffID().equals(staffID))
+                    .collect(Collectors.toList());
+            if (staff.isEmpty()) {
+                throw new IllegalArgumentException("No such Staff exist");
+            }
+            return ResponseEntity.ok(staff);
+        } else {
+            throw new IllegalArgumentException("No such account exist");
+        }
+    }
+    
 }
