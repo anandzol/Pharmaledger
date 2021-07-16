@@ -75,13 +75,12 @@ public class SendTrial extends FlowLogic<String> {
         try {
             String[] patients = trialPatients.split(",");
             for (int counter =0; counter < patients.length; counter++) {
-                int patientID = Integer.parseInt(patients[counter]);
-
+                String patient = patients[counter];
                 List<StateAndRef<PatientState>> patientStateAndRefs = getServiceHub().getVaultService()
                 .queryBy(PatientState.class).getStates();
                 StateAndRef<PatientState> inputPatientStateAndRef = patientStateAndRefs.stream().filter(patientStateAndRef -> {
                     PatientState patientState = patientStateAndRef.getState().getData();
-                    return patientState.getPatientID().equals(patientID);
+                    return patientState.getPatientID().equals(patient);
                 }).findAny().orElseThrow(() -> new IllegalArgumentException("Patient data Not Found"));
         }
         } catch (Exception e) {
