@@ -323,5 +323,20 @@ public class Controller {
             throw new IllegalArgumentException("No such account exist");
         }
     }
+
+    @GetMapping(value = "/patients/getallpatientaddress", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<PatientAddressState>>> getAllPatientAddress(HttpServletRequest request)
+            throws IllegalArgumentException {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity
+                    .ok(proxy.vaultQueryByCriteria(generalCriteria, PatientAddressState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
     
 }

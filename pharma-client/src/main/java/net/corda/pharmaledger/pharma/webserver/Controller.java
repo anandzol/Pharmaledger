@@ -292,6 +292,19 @@ public class Controller {
         }
     }
 
+    @GetMapping(value = "/participants/getallevaluation", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<PatientEvaluationState>>> getAllEvaluation(HttpServletRequest request) {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity.ok(proxy.vaultQueryByCriteria(generalCriteria, PatientEvaluationState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
+
     @PostMapping(value = "/participants/changetrialdates", produces = TEXT_PLAIN_VALUE)
     public ResponseEntity<String> changeTrialDates(HttpServletRequest request) throws IllegalArgumentException {
         String trialID = request.getParameter("trialID");

@@ -49,6 +49,7 @@ import net.corda.pharmaledger.medical.SendPatientEvaluationData;
 import net.corda.pharmaledger.medical.states.PatientState;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
 import net.corda.pharmaledger.pharma.states.MedicalStaffState;
+import net.corda.pharmaledger.pharma.states.TrialState;
 import net.corda.pharmaledger.pharma.states.TrialTemplateState;
 
 /**
@@ -319,6 +320,41 @@ public class Controller {
     }
 
     // Trial Management APIs
+
+    @GetMapping(value = "/trials/getalltrials", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialState>>> getAllTrials(HttpServletRequest request)
+            throws IllegalArgumentException {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity.ok(proxy.vaultQueryByCriteria(generalCriteria, TrialState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
+
+    @GetMapping(value = "/trials/gettrial", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialState>>> getTrial(HttpServletRequest request)
+            throws IllegalArgumentException {
+        String accountName = request.getParameter("accountName");
+        String trialID = request.getParameter("trialID");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<TrialState>> trial = proxy.vaultQueryByCriteria(generalCriteria, TrialState.class)
+                    .getStates().stream().filter(it -> it.getState().getData().getTrialID().equals(trialID))
+                    .collect(Collectors.toList());
+            if (trial.isEmpty()) {
+                throw new IllegalArgumentException("No Trial exist");
+            }
+            return ResponseEntity.ok(trial);
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
 
     @GetMapping(value = "/trials/getalltrialtemplate", produces = APPLICATION_JSON_VALUE)
     public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getAllTemplate(HttpServletRequest request)
