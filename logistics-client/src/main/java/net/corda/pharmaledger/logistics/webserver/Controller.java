@@ -45,6 +45,7 @@ import net.corda.pharmaledger.accountUtilities.CreateNewAccount;
 import net.corda.pharmaledger.accountUtilities.ShareAccountTo;
 import net.corda.pharmaledger.logistics.ShipmentTracker;
 import net.corda.pharmaledger.logistics.UpdateShipmentTracker;
+import net.corda.pharmaledger.logistics.states.ShipmentState;
 import net.corda.pharmaledger.medical.states.PatientAddressState;
 import net.corda.pharmaledger.pharma.states.ShipmentRequestState;
 
@@ -270,6 +271,27 @@ public class Controller {
             List<StateAndRef<ShipmentRequestState>> trial = proxy
                     .vaultQueryByCriteria(generalCriteria, ShipmentRequestState.class).getStates().stream()
                     .filter(it -> it.getState().getData().getPackageID().equals(packageID))
+                    .collect(Collectors.toList());
+            if (trial.isEmpty()) {
+                throw new IllegalArgumentException("No Shipment exist");
+            }
+            return ResponseEntity.ok(trial);
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
+
+    @GetMapping(value = "/package/trackshipment", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<ShipmentState>>> getShipmentByPackageID(HttpServletRequest request) {
+        String packageID = request.getParameter("packageID");
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<ShipmentState>> trial = proxy
+                    .vaultQueryByCriteria(generalCriteria, ShipmentState.class).getStates().stream()
+                    .filter(it -> it.getState().getData().getpackageID().equals(packageID))
                     .collect(Collectors.toList());
             if (trial.isEmpty()) {
                 throw new IllegalArgumentException("No Shipment exist");
