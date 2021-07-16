@@ -121,11 +121,11 @@ Frontend for this project is maintained in other repo - [PharmaLedger WebApp](ht
 Steps to deploy different UIs are provided in following link:  
   
 
-Pharma UI - [Pharma](https://gitlab.lrz.de/00000000014A5EBE/pharmaledger-webapp/-/tree/main/pharmaledger-pharma-ui)  
-Medical UI - [Medical](https://gitlab.lrz.de/00000000014A5EBE/pharmaledger-webapp/-/tree/main/pharmaledger-medical-ui)  
-Logistics UI - [Logistics](https://gitlab.lrz.de/00000000014A5EBE/pharmaledger-webapp/-/tree/main/pharmaledger-logistics-ui)  
+Pharma UI - [Pharma](https://github.com/thandayuthapani/Pharmaledger-WebApp/tree/master/pharmaledger-pharma-ui)  
+Medical UI - [Medical](https://github.com/thandayuthapani/Pharmaledger-WebApp/tree/master/pharmaledger-medical-ui)  
+Logistics UI - [Logistics](https://github.com/thandayuthapani/Pharmaledger-WebApp/tree/master/pharmaledger-logistics-ui)  
 
 ## Future Developments
-Future developments of this project will be done in following repository:  [PharmaLedger](https://github.com/thandayuthapani/pharmaledger)  
+Future developments of this project will be done in following repository:  [PharmaLedger](https://github.com/thandayuthapani/pharmaledger), [PharmaLedger-WebApp](https://github.com/thandayuthapani/Pharmaledger-WebApp)  
 ## Demo
 Demo of this project can be found in following link: [Demo]()
