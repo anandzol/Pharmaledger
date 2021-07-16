@@ -48,6 +48,7 @@ import net.corda.pharmaledger.medical.SendPatientData;
 import net.corda.pharmaledger.medical.SendPatientEvaluationData;
 import net.corda.pharmaledger.medical.states.PatientState;
 import net.corda.pharmaledger.pharma.states.KitShipmentState;
+import net.corda.pharmaledger.pharma.states.TrialTemplateState;
 
 /**
  * Define your API endpoints here.
@@ -313,6 +314,44 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.CREATED).body(result);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // Trial Management APIs
+
+    @GetMapping(value = "/trials/getalltrialtemplate", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getAllTemplate(HttpServletRequest request)
+            throws IllegalArgumentException {
+        String accountName = request.getParameter("accountName");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            return ResponseEntity.ok(proxy.vaultQueryByCriteria(generalCriteria, TrialTemplateState.class).getStates());
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
+        }
+    }
+
+    @GetMapping(value = "/trials/gettrialtemplate", produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<StateAndRef<TrialTemplateState>>> getTemplate(HttpServletRequest request)
+            throws IllegalArgumentException {
+        String accountName = request.getParameter("accountName");
+        String templateID = request.getParameter("templateID");
+        StateAndRef<AccountInfo> account = getAccountInfobyName(accountName);
+        if (account != null) {
+            UUID accountID = account.getState().getData().getIdentifier().getId();
+            QueryCriteria generalCriteria = new VaultQueryCriteria().withExternalIds(Arrays.asList(accountID));
+            List<StateAndRef<TrialTemplateState>> trialTemplate = proxy
+                    .vaultQueryByCriteria(generalCriteria, TrialTemplateState.class).getStates().stream()
+                    .filter(it -> it.getState().getData().getTrialTemplateID().equals(templateID))
+                    .collect(Collectors.toList());
+            if (trialTemplate.isEmpty()) {
+                throw new IllegalArgumentException("No Trial Template exist");
+            }
+            return ResponseEntity.ok(trialTemplate);
+        } else {
+            throw new IllegalArgumentException("No Such account exist");
         }
     }
 }
