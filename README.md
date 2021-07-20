@@ -128,4 +128,4 @@ Logistics UI - [Logistics](https://github.com/thandayuthapani/Pharmaledger-WebAp
 ## Future Developments
 Future developments of this project will be done in following repository:  [PharmaLedger](https://github.com/thandayuthapani/pharmaledger), [PharmaLedger-WebApp](https://github.com/thandayuthapani/Pharmaledger-WebApp)  
 ## Demo
-Demo of this project can be found in following link: [Demo]()
+Demo of this project can be found in following link: [Demo](https://drive.google.com/file/d/1dpPrdwYYzz3tczBAuuzdXGRYHfXTSEl2/view?usp=sharing)
